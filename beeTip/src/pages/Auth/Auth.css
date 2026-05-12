@@ -1,0 +1,140 @@
+.auth {
+  background:
+    radial-gradient(circle at 20% 20%, #e6d99033, transparent 40%),
+    radial-gradient(circle at 80% 80%, #e6d99033, transparent 35%),
+    linear-gradient(135deg, var(--primary-400), var(--primary-600));
+}
+
+.auth-graphic {
+  width: 50%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.5s cubic-bezier(0.83, 0, 0.17, 1);
+}
+
+.auth-graphic-left {
+  opacity: 0;
+}
+
+.auth-graphic-right {
+  opacity: 1;
+}
+
+.auth-register .auth-graphic-left {
+  opacity: 1;
+}
+
+.auth-register .auth-graphic-right {
+  opacity: 0;
+}
+
+.auth-form-panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  background: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.7s cubic-bezier(0.83, 0, 0.17, 1);
+}
+
+.auth-register .auth-form-panel {
+  transform: translateX(100%);
+}
+
+.auth-form-panel > * {
+  transition: opacity 0.35s cubic-bezier(0.83, 0, 0.17, 1);
+  opacity: 1;
+}
+
+.auth-form-panel-fading > * {
+  opacity: 0;
+}
+
+.auth-form {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  color: var(--gray-900);
+}
+
+.auth-form-header-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.auth-form-logo {
+  font-size: 3.5rem;
+  text-align: center;
+}
+
+.auth-form-desc {
+  color: var(--gray-400);
+  text-align: center;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.form-input-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 0.25rem;
+}
+
+.form-input-container label {
+  color: var(--gray-400);
+}
+
+.form-input-container input {
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 0.75rem 0.9rem;
+  border: 0.01rem solid var(--gray-300);
+  border-radius: 0.75rem;
+  color: var(--gray-900);
+  transition: all 0.3s ease;
+}
+
+.form-input-container input:focus {
+  outline: none;
+  border-color: var(--primary-500);
+}
+
+.auth-form-error {
+  color: var(--danger);
+  background: #ffedeb;
+  padding: 0.75rem 1rem;
+  border-radius: 1rem;
+}
+
+.auth-form-btn {
+  width: 60%;
+}
+
+.auth-form-switch {
+  display: flex;
+  gap: 0.5rem;
+  color: var(--gray-400);
+}
+
+.auth-form-link {
+  background: none;
+  border: none;
+  color: var(--primary-500);
+  font-weight: 600;
+}
+
+.auth-form-link:hover {
+  text-decoration: underline;
+}

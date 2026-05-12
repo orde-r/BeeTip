@@ -1,0 +1,18 @@
+.landing {
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.landing-left {
+  width: 35%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.landing-logo {
+  font-size: 3rem;
+}

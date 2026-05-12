@@ -1,58 +1,61 @@
 @font-face {
   font-family: "Poppins";
-  src: url("/fonts/poppins/Poppins-Light.ttf") format("truetype");
+  src: url("./assets/fonts/poppins/Poppins-Light.ttf") format("truetype");
   font-weight: 300;
   font-style: normal;
 }
 
 @font-face {
   font-family: "Poppins";
-  src: url("/fonts/poppins/Poppins-Regular.ttf") format("truetype");
+  src: url("./assets/fonts/poppins/Poppins-Regular.ttf") format("truetype");
   font-weight: 400;
   font-style: normal;
 }
 
 @font-face {
   font-family: "Poppins";
-  src: url("/fonts/poppins/Poppins-Medium.ttf") format("truetype");
+  src: url("./assets/fonts/poppins/Poppins-Medium.ttf") format("truetype");
   font-weight: 500;
   font-style: normal;
 }
 
 @font-face {
   font-family: "Poppins";
-  src: url("/fonts/poppins/Poppins-SemiBold.ttf") format("truetype");
+  src: url("./assets/fonts/poppins/Poppins-SemiBold.ttf") format("truetype");
   font-weight: 600;
   font-style: normal;
 }
 
 @font-face {
   font-family: "Poppins";
-  src: url("/fonts/poppins/Poppins-Bold.ttf") format("truetype");
+  src: url("./assets/fonts/poppins/Poppins-Bold.ttf") format("truetype");
   font-weight: 700;
   font-style: normal;
 }
 
 @font-face {
   font-family: "LaurentianStd-It";
-  src: url("/fonts/laurentian/LaurentianStd-SemiBold-It.otf") format("opentype");
+  src: url("./assets/fonts/laurentian/LaurentianStd-SemiBold-It.otf")
+    format("opentype");
   font-weight: 500;
   font-style: italic;
 }
 
 :root {
-  --primary-200: #a0fffd;
-  --primary-300: #57e1f0;
-  --primary-400: #27b3cf;
-  --primary-500: #2991b7;
-  --primary-600: #1c659a;
-  --primary-700: #194a81;
-  --primary-800: #0f295c;
-  --primary-900: #0a194f;
+  --primary-100: hsl(50, 100%, 92%);
+  --primary-200: hsl(47, 93%, 79%);
+  --primary-300: hsl(43, 79%, 65%);
+  --primary-400: hsl(39, 83%, 59%);
+  --primary-500: hsl(35, 91%, 51%);
+  --primary-600: hsl(32, 92%, 45%);
+  --primary-700: hsl(28, 96%, 39%);
+  --primary-800: hsl(23, 97%, 26%);
+  --primary-900: hsl(20, 100%, 15%);
 
   --white: #ffffff;
-  --gray-100: #f7f7f7;
-  --gray-200: #e8e8e8;
+  --gray-50: #fafafa;
+  --gray-100: #f5f5f5;
+  --gray-200: #ededed;
   --gray-300: #c2c2c2;
   --gray-400: #959595;
   --gray-500: #636363;
@@ -75,11 +78,12 @@
   box-sizing: border-box;
 }
 
-body {
+#root {
   font-family: Poppins;
-  color: var(--gray-100);
+  color: var(--gray-900);
   overflow-x: hidden;
   background-color: var(--gray-100);
+  height: 100vh;
 }
 
 html {
@@ -101,4 +105,67 @@ html {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--gray-400);
+}
+
+a,
+button {
+  text-decoration: none;
+  font-family: inherit;
+  color: inherit;
+  cursor: pointer;
+  font-size: inherit;
+}
+
+section {
+  width: 100%;
+  height: 100%;
+  display: flex;
+}
+
+.logo {
+  font-family: LaurentianStd-It;
+  color: var(--primary-500);
+}
+
+.primary-btn {
+  background:
+    radial-gradient(circle at 17.5% 0%, #e6d99033, transparent 35%),
+    radial-gradient(circle at 82.5% 100%, #e6d99033, transparent 25%),
+    linear-gradient(var(--primary-500), var(--primary-500));
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.75rem 1.15rem;
+  font-weight: 500;
+  font-size: 1.15rem;
+  border-radius: 1rem;
+  transition: all 0.3s ease;
+  color: white;
+  border: 0.01rem solid transparent;
+}
+
+.primary-btn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-0.1rem);
+  box-shadow: 0 0.25rem 0.5rem var(--primary-100);
+}
+
+.outline-btn {
+  background: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.75rem 1.15rem;
+  font-weight: 500;
+  font-size: 1.15rem;
+  border-radius: 1rem;
+  transition: all 0.3s ease;
+  border: 0.2rem solid var(--primary-500);
+  color: var(--primary-500);
+}
+
+.outline-btn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-0.1rem);
+  box-shadow: 0 0.25rem 0.5rem var(--primary-100);
 }

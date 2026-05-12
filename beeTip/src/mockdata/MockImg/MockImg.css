@@ -1,0 +1,12 @@
+.mock-img-container {
+  display: flex;
+  width: 500px;
+  padding: 1rem;
+  background-color: var(--gray-800);
+  border-radius: 9999px;
+}
+
+.mock-img-container img {
+  width: 100%;
+  height: auto;
+}
