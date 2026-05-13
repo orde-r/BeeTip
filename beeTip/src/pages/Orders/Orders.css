@@ -1,0 +1,145 @@
+.orders {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 4rem 3rem;
+}
+
+.orders-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.orders-search {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 24rem;
+}
+
+.orders-search-label {
+  color: var(--gray-700);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.orders-search-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.orders-search-input .material-symbols-outlined {
+  position: absolute;
+  left: 1rem;
+  color: var(--gray-400);
+}
+
+.orders-search-input input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 3rem;
+  border-radius: 0.75rem;
+  border: 0.0625rem solid var(--gray-300);
+  background: var(--white);
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--gray-900);
+  transition: all 0.3s ease;
+}
+
+.orders-search-input input:focus {
+  outline: none;
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 0.0625rem var(--primary-500);
+}
+
+.orders-filters {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+}
+
+.orders-filter {
+  padding: 0.5rem 1.5rem;
+  border-radius: 9999px;
+  background: var(--gray-200);
+  color: var(--gray-700);
+  font-weight: 600;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.orders-filter:hover {
+  background: var(--gray-300);
+}
+
+.orders-filter-active,
+.orders-filter-active:hover {
+  background: var(--primary-500);
+  color: var(--white);
+}
+
+.orders-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .orders-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .orders-toolbar {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+}
+
+@media (min-width: 1024px) {
+  .orders-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.orders-fab {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 9999px;
+  background: var(--primary-500);
+  color: var(--white);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0.5rem 1rem hsl(35deg 91% 51% / 0.35);
+  transition: transform 0.5s ease;
+  z-index: 40;
+}
+
+.orders-fab:hover {
+  transform: rotate(180deg);
+  background: var(--primary-600);
+}
+
+.orders-fab .material-symbols-outlined {
+  font-size: 1.75rem;
+}
+
+@media (max-width: 768px) {
+  .orders {
+    padding: 2rem 1.25rem;
+  }
+  .orders-fab {
+    bottom: 6rem;
+    right: 1.25rem;
+  }
+}

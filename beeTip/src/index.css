@@ -78,10 +78,25 @@
   box-sizing: border-box;
 }
 
+html,
+body {
+  width: 100%;
+  min-height: 100vh;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--gray-100);
+}
+
 #root {
+  width: 400px;
   font-family: Poppins;
   color: var(--gray-900);
   overflow-x: hidden;
+  overflow-y: auto;
   background-color: var(--gray-100);
   height: 100vh;
 }
@@ -91,20 +106,7 @@ html {
 }
 
 ::-webkit-scrollbar {
-  width: 4px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--gray-900);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--gray-600);
-  border-radius: 1rem;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--gray-400);
+  width: 0px;
 }
 
 a,
@@ -118,8 +120,17 @@ button {
 
 section {
   width: 100%;
-  height: 100%;
+  min-height: 100%;
   display: flex;
+}
+
+.material-symbols-outlined {
+  font-variation-settings:
+    "FILL" 0,
+    "wght" 400,
+    "GRAD" 0,
+    "opsz" 24;
+  user-select: none;
 }
 
 .logo {
@@ -168,4 +179,8 @@ section {
   filter: brightness(1.1);
   transform: translateY(-0.1rem);
   box-shadow: 0 0.25rem 0.5rem var(--primary-100);
+}
+
+.navbar-section {
+  margin-bottom: 5rem;
 }

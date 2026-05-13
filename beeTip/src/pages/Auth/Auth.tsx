@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import Login from "./Login";
 import Register from "./Register";
-import MockImage from "../../mockdata/MockImg/MockImg";
 import "./Auth.css";
 
 type AuthMode = "login" | "register";
@@ -20,13 +19,6 @@ export default function Auth() {
 
   return (
     <section className={`auth ${isRegister ? "auth-register" : ""}`}>
-      <div className="auth-graphic auth-graphic-left">
-        <MockImage />
-      </div>
-      <div className="auth-graphic auth-graphic-right">
-        <MockImage />
-      </div>
-
       <div
         className={`auth-form-panel ${
           isAnimating ? "auth-form-panel-fading" : ""
