@@ -1,12 +1,35 @@
+import 'dotenv/config';
 import { serve } from '@hono/node-server'
 import { swaggerUI } from '@hono/swagger-ui'
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi'
+import { AppError } from './errors/app-error.js'
+import { authApp } from './routes/auth.routes.js'
+import type { UserPayload } from './middlewares/auth.middleware.js'
 
-const app = new OpenAPIHono()
+type AppVariables = { Variables: { user: UserPayload } };
 
-const healthSchema = createRoute({
+const app = new OpenAPIHono<AppVariables>({
+  defaultHook: (result, c) => {
+    if (!result.success) {
+      const firstError = result.error.issues[0];
+      return c.json({ message: firstError?.message ?? 'Validation error' }, 400);
+    }
+  },
+})
+
+app.onError((err, c) => {
+  if (err instanceof AppError) {
+    return c.json({ message: err.message }, err.statusCode as any);
+  }
+
+  console.error('Unhandled error:', err);
+  return c.json({ message: 'Internal Server Error' }, 500);
+});
+
+const healthRoute = createRoute({
   method: 'get',
   path: '/health',
+  tags: ['System'],
   responses: {
     200: {
       description: 'Respond a health check',
@@ -21,15 +44,15 @@ const healthSchema = createRoute({
       },
     },
   },
-
 })
 
-app.openapi(healthSchema, (c) => {
+app.openapi(healthRoute, (c) => {
   return c.json({
     status: 'ok',
   })
 })
 
+app.route('/', authApp)
 
 app.doc('/openapi.json', {
   openapi: '3.0.0',
