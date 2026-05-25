@@ -1,0 +1,48 @@
+erDiagram
+    USERS {
+        uuid id PK
+        string email
+        string password_hash
+        float balance
+        string current_role "USER or KURIR (Managed by frontend toggle)"
+        datetime created_at
+        datetime updated_at
+    }
+
+    ORDERS {
+        uuid id PK
+        uuid buyer_id FK
+        uuid kurir_id FK "Nullable, assigned when accepted"
+        string to_location
+        text item_desc
+        float item_price "Nullable, uploaded by Kurir"
+        float delivery_fee "Fixed at 5000"
+        string status "PENDING, ACCEPTED, PRICED, PAID, COMPLETED, CANCELLED"
+        string security_code "Generated when PAID"
+        datetime created_at
+        datetime updated_at
+    }
+
+    MESSAGES {
+        uuid id PK
+        uuid order_id FK
+        uuid sender_id FK
+        text content
+        datetime timestamp
+    }
+
+    TRANSACTIONS {
+        uuid id PK
+        uuid user_id FK
+        uuid order_id FK "Nullable, for order payments"
+        string type "DEPOSIT, WITHDRAW, PAYMENT, EARNING"
+        float amount
+        string status "SUCCESS, FAILED"
+        datetime created_at
+    }
+
+    USERS ||--o{ ORDERS : "buyer (places)"
+    USERS ||--o{ ORDERS : "kurir (delivers)"
+    ORDERS ||--o{ MESSAGES : "contains"
+    USERS ||--o{ MESSAGES : "sends"
+    USERS ||--o{ TRANSACTIONS : "makes"
