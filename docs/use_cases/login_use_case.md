@@ -2,7 +2,7 @@
 
 A registered user authenticates and receives a JWT access token.
 
-The token contains `{ id, email, role }` in the payload. The token is returned in the JSON response body — the client is responsible for storing it and attaching it to subsequent requests as `Authorization: Bearer <token>`.
+The token contains `{ id, email, role }` in the payload. The token is assigned as a HttpOnly Cookie by the server, and attached to subsequent requests as `Authorization: Bearer <token>`.
 
 ## Flow
 
