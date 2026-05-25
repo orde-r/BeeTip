@@ -53,3 +53,9 @@ export const ErrorResponseSchema = z
     message: z.string().openapi({ example: "Something went wrong" }),
   })
   .openapi("ErrorResponse");
+
+export const MessageResponseSchema = z
+  .object({
+    message: z.string().openapi({ example: "Operation successful" }),
+  })
+  .openapi("MessageResponse");

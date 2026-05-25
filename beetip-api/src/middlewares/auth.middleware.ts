@@ -17,7 +17,7 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
     throw new UnauthorizedError("Missing or invalid Authorization header");
   }
 
-  const token = authHeader.slice(7); // Remove "Bearer "
+  const token = authHeader.slice(7);
 
   try {
     const payload = jwt.verify(token, JWT_SECRET) as UserPayload;

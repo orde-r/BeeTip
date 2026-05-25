@@ -1,11 +1,12 @@
-import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
-import { setCookie } from "hono/cookie";
+import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
+import { setCookie, deleteCookie } from "hono/cookie";
 import {
   AuthRegisterBodySchema,
   AuthRegisterResponseSchema,
   AuthLoginBodySchema,
   AuthLoginResponseSchema,
   ErrorResponseSchema,
+  MessageResponseSchema,
 } from "../dtos/auth.dto.js";
 import { registerUser, loginUser } from "../services/auth.service.js";
 
@@ -117,4 +118,29 @@ authApp.openapi(loginRoute, async (c) => {
   });
 
   return c.json(result, 200);
+});
+
+const logoutRoute = createRoute({
+  method: "post",
+  path: "/auth/logout",
+  tags: ["Auth"],
+  summary: "Logout and clear session cookie",
+  responses: {
+    200: {
+      description: "Logout successful",
+      content: {
+        "application/json": {
+          schema: MessageResponseSchema,
+        },
+      },
+    },
+  },
+});
+
+authApp.openapi(logoutRoute, (c) => {
+  deleteCookie(c, "accessToken", {
+    path: "/",
+  });
+
+  return c.json({ message: "Logout successful" }, 200);
 });
