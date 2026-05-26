@@ -1,7 +1,10 @@
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import db from "../db.js";
 import { ordersTable } from "../db/schema.js";
 import type { OrderDTO } from "../dtos/order.dto.js";
+import { NotFoundError } from "../errors/not-found.error.js";
+import { ForbiddenError } from "../errors/forbidden.error.js";
+import { BadRequestError } from "../errors/bad-request.error.js";
 
 function toOrderDTO(row: typeof ordersTable.$inferSelect): OrderDTO {
   return {
@@ -42,5 +45,44 @@ export async function listAvailableOrders() {
   return {
     orders: rows.map(toOrderDTO),
     total: rows.length,
+  };
+}
+
+export async function acceptOrder(orderId: string, kurirId: string) {
+  const [order] = await db
+    .select()
+    .from(ordersTable)
+    .where(eq(ordersTable.id, orderId))
+    .limit(1);
+
+  if (!order) {
+    throw new NotFoundError("Order not found");
+  }
+
+  if (order.status !== "PENDING") {
+    throw new BadRequestError("Order is not in PENDING state");
+  }
+
+  if (order.buyerId === kurirId) {
+    throw new ForbiddenError("Cannot accept your own order");
+  }
+
+  const [updated] = await db
+    .update(ordersTable)
+    .set({
+      kurirId,
+      status: "ACCEPTED",
+      updatedAt: new Date(),
+    })
+    .where(and(eq(ordersTable.id, orderId), eq(ordersTable.status, "PENDING")))
+    .returning();
+
+  if (!updated) {
+    throw new BadRequestError("Order was already accepted by someone else");
+  }
+
+  return {
+    message: "Order accepted successfully",
+    order: toOrderDTO(updated),
   };
 }

@@ -36,3 +36,10 @@ export const ListOrdersResponseSchema = z
     total: z.number().openapi({ example: 1 }),
   })
   .openapi("ListOrdersResponse");
+
+export const AcceptOrderResponseSchema = z
+  .object({
+    message: z.string().openapi({ example: "Order accepted successfully" }),
+    order: OrderDTOSchema,
+  })
+  .openapi("AcceptOrderResponse");
