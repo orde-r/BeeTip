@@ -4,6 +4,7 @@ import { swaggerUI } from '@hono/swagger-ui'
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi'
 import { AppError } from './errors/app-error.js'
 import { authApp } from './routes/auth.routes.js'
+import { orderApp } from './routes/order.routes.js'
 import type { UserPayload } from './middlewares/auth.middleware.js'
 
 type AppVariables = { Variables: { user: UserPayload } };
@@ -53,6 +54,13 @@ app.openapi(healthRoute, (c) => {
 })
 
 app.route('/', authApp)
+app.route('/', orderApp)
+
+app.openAPIRegistry.registerComponent('securitySchemes', 'Bearer', {
+  type: 'http',
+  scheme: 'bearer',
+  bearerFormat: 'JWT',
+})
 
 app.doc('/openapi.json', {
   openapi: '3.0.0',
