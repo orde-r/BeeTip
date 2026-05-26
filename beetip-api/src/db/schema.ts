@@ -31,3 +31,11 @@ export const transactionsTable = pgTable("transactions", {
   amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+export const messagesTable = pgTable("messages", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  orderId: uuid("order_id").notNull().references(() => ordersTable.id),
+  senderId: uuid("sender_id").notNull().references(() => usersTable.id),
+  content: varchar("content", { length: 2000 }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
