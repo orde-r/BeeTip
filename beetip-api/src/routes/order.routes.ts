@@ -4,11 +4,23 @@ import {
   CreateOrderResponseSchema,
   ListOrdersResponseSchema,
   AcceptOrderResponseSchema,
+  UploadPriceBodySchema,
+  UploadPriceResponseSchema,
+  PayOrderResponseSchema,
+  CompleteOrderBodySchema,
+  CompleteOrderResponseSchema,
 } from "../dtos/order.dto.js";
 import { ErrorResponseSchema } from "../dtos/auth.dto.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 import { UnauthorizedError } from "../errors/unauthorized.error.js";
-import { createOrder, listAvailableOrders, acceptOrder } from "../services/order.service.js";
+import {
+  createOrder,
+  listAvailableOrders,
+  acceptOrder,
+  uploadPrice,
+  payOrder,
+  completeOrder,
+} from "../services/order.service.js";
 
 export const orderApp = new OpenAPIHono();
 
@@ -162,5 +174,167 @@ orderApp.openapi(acceptOrderRoute, async (c) => {
 
   const { id } = c.req.valid("param");
   const result = await acceptOrder(id, (user as any).id);
+  return c.json(result, 200);
+});
+
+const uploadPriceRoute = createRoute({
+  method: "post",
+  path: "/orders/{id}/price",
+  tags: ["Orders"],
+  summary: "Upload item price for an accepted order",
+  security: [{ Bearer: [] }],
+  request: {
+    params: z.object({
+      id: z.string().uuid().openapi({ example: "550e8400-e29b-41d4-a716-446655440000" }),
+    }),
+    body: {
+      content: {
+        "application/json": {
+          schema: UploadPriceBodySchema,
+        },
+      },
+      required: true,
+    },
+  },
+  responses: {
+    200: {
+      description: "Price updated successfully",
+      content: {
+        "application/json": {
+          schema: UploadPriceResponseSchema,
+        },
+      },
+    },
+    400: {
+      description: "Order is not in ACCEPTED state or invalid price",
+      content: { "application/json": { schema: ErrorResponseSchema } },
+    },
+    401: {
+      description: "Missing or invalid authentication",
+      content: { "application/json": { schema: ErrorResponseSchema } },
+    },
+    403: {
+      description: "Not the assigned kurir",
+      content: { "application/json": { schema: ErrorResponseSchema } },
+    },
+    404: {
+      description: "Order not found",
+      content: { "application/json": { schema: ErrorResponseSchema } },
+    },
+  },
+});
+
+orderApp.openapi(uploadPriceRoute, async (c) => {
+  const user = c.get("user" as never);
+  if (!user) throw new UnauthorizedError();
+
+  const { id } = c.req.valid("param");
+  const { item_price } = c.req.valid("json");
+  const result = await uploadPrice(id, (user as any).id, item_price);
+  return c.json(result, 200);
+});
+
+const payOrderRoute = createRoute({
+  method: "post",
+  path: "/orders/{id}/pay",
+  tags: ["Orders"],
+  summary: "Pay for a priced order",
+  security: [{ Bearer: [] }],
+  request: {
+    params: z.object({
+      id: z.string().uuid().openapi({ example: "550e8400-e29b-41d4-a716-446655440000" }),
+    }),
+  },
+  responses: {
+    200: {
+      description: "Payment successful",
+      content: {
+        "application/json": {
+          schema: PayOrderResponseSchema,
+        },
+      },
+    },
+    400: {
+      description: "Order is not in PRICED state or insufficient balance",
+      content: { "application/json": { schema: ErrorResponseSchema } },
+    },
+    401: {
+      description: "Missing or invalid authentication",
+      content: { "application/json": { schema: ErrorResponseSchema } },
+    },
+    403: {
+      description: "Not the buyer for this order",
+      content: { "application/json": { schema: ErrorResponseSchema } },
+    },
+    404: {
+      description: "Order not found",
+      content: { "application/json": { schema: ErrorResponseSchema } },
+    },
+  },
+});
+
+orderApp.openapi(payOrderRoute, async (c) => {
+  const user = c.get("user" as never);
+  if (!user) throw new UnauthorizedError();
+
+  const { id } = c.req.valid("param");
+  const result = await payOrder(id, (user as any).id);
+  return c.json(result, 200);
+});
+
+const completeOrderRoute = createRoute({
+  method: "post",
+  path: "/orders/{id}/complete",
+  tags: ["Orders"],
+  summary: "Complete an order with security code",
+  security: [{ Bearer: [] }],
+  request: {
+    params: z.object({
+      id: z.string().uuid().openapi({ example: "550e8400-e29b-41d4-a716-446655440000" }),
+    }),
+    body: {
+      content: {
+        "application/json": {
+          schema: CompleteOrderBodySchema,
+        },
+      },
+      required: true,
+    },
+  },
+  responses: {
+    200: {
+      description: "Order completed successfully",
+      content: {
+        "application/json": {
+          schema: CompleteOrderResponseSchema,
+        },
+      },
+    },
+    400: {
+      description: "Order is not in PAID state or invalid security code",
+      content: { "application/json": { schema: ErrorResponseSchema } },
+    },
+    401: {
+      description: "Missing or invalid authentication",
+      content: { "application/json": { schema: ErrorResponseSchema } },
+    },
+    403: {
+      description: "Not the assigned kurir",
+      content: { "application/json": { schema: ErrorResponseSchema } },
+    },
+    404: {
+      description: "Order not found",
+      content: { "application/json": { schema: ErrorResponseSchema } },
+    },
+  },
+});
+
+orderApp.openapi(completeOrderRoute, async (c) => {
+  const user = c.get("user" as never);
+  if (!user) throw new UnauthorizedError();
+
+  const { id } = c.req.valid("param");
+  const { security_code } = c.req.valid("json");
+  const result = await completeOrder(id, (user as any).id, security_code);
   return c.json(result, 200);
 });
