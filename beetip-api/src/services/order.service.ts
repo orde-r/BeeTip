@@ -1,6 +1,8 @@
-import { eq, and } from "drizzle-orm";
+import crypto from "crypto";
+import { eq, and, sql } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/node-postgres";
 import db from "../db.js";
-import { ordersTable } from "../db/schema.js";
+import { ordersTable, usersTable, transactionsTable } from "../db/schema.js";
 import type { OrderDTO } from "../dtos/order.dto.js";
 import { NotFoundError } from "../errors/not-found.error.js";
 import { BadRequestError } from "../errors/bad-request.error.js";
@@ -23,6 +25,10 @@ function toOrderDTO(row: typeof ordersTable.$inferSelect): OrderDTO {
 function getOrderOrThrow(order: typeof ordersTable.$inferSelect | undefined) {
   if (!order) throw new NotFoundError("Order not found");
   return order;
+}
+
+function generateSecurityCode(): string {
+  return crypto.randomInt(100000, 999999).toString();
 }
 
 export async function createOrder(buyerId: string, toLocation: string, itemDesc: string) {
@@ -81,4 +87,137 @@ export async function acceptOrder(orderId: string, kurirId: string) {
     message: "Order accepted successfully",
     order: toOrderDTO(updated),
   };
+}
+
+export async function uploadPrice(orderId: string, userId: string, itemPrice: number) {
+  const [row] = await db
+    .select()
+    .from(ordersTable)
+    .where(eq(ordersTable.id, orderId))
+    .limit(1);
+
+  const order = getOrderOrThrow(row);
+  validateTransition(order.status, "price", userId, order.buyerId, order.kurirId);
+
+  const [updated] = await db
+    .update(ordersTable)
+    .set({
+      itemPrice: itemPrice.toFixed(2),
+      status: "PRICED",
+      updatedAt: new Date(),
+    })
+    .where(eq(ordersTable.id, orderId))
+    .returning();
+
+  return {
+    message: "Price updated successfully",
+    order: toOrderDTO(updated),
+  };
+}
+
+export async function payOrder(orderId: string, buyerId: string) {
+  return await db.transaction(async (tx) => {
+    const [row] = await tx
+      .select()
+      .from(ordersTable)
+      .where(eq(ordersTable.id, orderId))
+      .for("update")
+      .limit(1);
+
+    const order = getOrderOrThrow(row);
+    validateTransition(order.status, "pay", buyerId, order.buyerId, order.kurirId);
+
+    const totalAmount = Number(order.itemPrice!) + Number(order.deliveryFee);
+
+    const [buyer] = await tx
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.id, buyerId))
+      .for("update")
+      .limit(1);
+
+    if (!buyer || Number(buyer.balance) < totalAmount) {
+      throw new BadRequestError("Insufficient balance");
+    }
+
+    await tx
+      .update(usersTable)
+      .set({
+        balance: sql`${usersTable.balance} - ${totalAmount.toFixed(2)}::numeric`,
+      })
+      .where(eq(usersTable.id, buyerId));
+
+    await tx.insert(transactionsTable).values({
+      userId: buyerId,
+      orderId,
+      type: "PAYMENT",
+      amount: totalAmount.toFixed(2),
+    });
+
+    const securityCode = generateSecurityCode();
+
+    const [updated] = await tx
+      .update(ordersTable)
+      .set({
+        status: "PAID",
+        securityCode,
+        updatedAt: new Date(),
+      })
+      .where(eq(ordersTable.id, orderId))
+      .returning();
+
+    return {
+      message: "Payment successful",
+      security_code: securityCode,
+      order: toOrderDTO(updated),
+    };
+  });
+}
+
+export async function completeOrder(orderId: string, kurirId: string, securityCode: string) {
+  return await db.transaction(async (tx) => {
+    const [row] = await tx
+      .select()
+      .from(ordersTable)
+      .where(eq(ordersTable.id, orderId))
+      .for("update")
+      .limit(1);
+
+    const order = getOrderOrThrow(row);
+    validateTransition(order.status, "complete", kurirId, order.buyerId, order.kurirId);
+
+    if (order.securityCode !== securityCode) {
+      throw new BadRequestError("Invalid security code");
+    }
+
+    const totalAmount = Number(order.itemPrice!) + Number(order.deliveryFee);
+
+    await tx
+      .update(usersTable)
+      .set({
+        balance: sql`${usersTable.balance} + ${totalAmount.toFixed(2)}::numeric`,
+      })
+      .where(eq(usersTable.id, kurirId));
+
+    await tx.insert(transactionsTable).values({
+      userId: kurirId,
+      orderId,
+      type: "EARNING",
+      amount: totalAmount.toFixed(2),
+    });
+
+    const [updated] = await tx
+      .update(ordersTable)
+      .set({
+        status: "COMPLETED",
+        updatedAt: new Date(),
+      })
+      .where(eq(ordersTable.id, orderId))
+      .returning();
+
+    return {
+      message: "Order completed successfully",
+      order: toOrderDTO(updated),
+    };
+  });
 }
