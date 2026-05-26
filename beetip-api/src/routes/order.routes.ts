@@ -11,7 +11,7 @@ import { createOrder, listAvailableOrders } from "../services/order.service.js";
 
 export const orderApp = new OpenAPIHono();
 
-orderApp.use("*", authMiddleware);
+orderApp.use("/orders/*", authMiddleware);
 
 const createOrderRoute = createRoute({
   method: "post",
