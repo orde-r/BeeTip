@@ -43,3 +43,37 @@ export const AcceptOrderResponseSchema = z
     order: OrderDTOSchema,
   })
   .openapi("AcceptOrderResponse");
+
+export const UploadPriceBodySchema = z
+  .object({
+    item_price: z.number().positive("Price must be positive").openapi({ example: 25000.0 }),
+  })
+  .openapi("UploadPriceBody");
+
+export const UploadPriceResponseSchema = z
+  .object({
+    message: z.string().openapi({ example: "Price updated successfully" }),
+    order: OrderDTOSchema,
+  })
+  .openapi("UploadPriceResponse");
+
+export const PayOrderResponseSchema = z
+  .object({
+    message: z.string().openapi({ example: "Payment successful" }),
+    security_code: z.string().openapi({ example: "123456" }),
+    order: OrderDTOSchema,
+  })
+  .openapi("PayOrderResponse");
+
+export const CompleteOrderBodySchema = z
+  .object({
+    security_code: z.string().min(1, "Security code is required").openapi({ example: "123456" }),
+  })
+  .openapi("CompleteOrderBody");
+
+export const CompleteOrderResponseSchema = z
+  .object({
+    message: z.string().openapi({ example: "Order completed successfully" }),
+    order: OrderDTOSchema,
+  })
+  .openapi("CompleteOrderResponse");
