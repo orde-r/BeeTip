@@ -1,6 +1,12 @@
 import { BadRequestError } from "../errors/bad-request.error.js";
 import { ForbiddenError } from "../errors/forbidden.error.js";
 
+// State Pattern
+/* The Order entity behaves differently depending on its current status.
+Each state determines which actions are allowed and who is authorized to perform them.
+Instead of scattering if-checks across handlers, each state encapsulates its own
+transition logic and guards via the orderTransitions map. */
+
 type AllowedRole = "BUYER" | "KURIR" | "BOTH";
 
 type TransitionConfig = {

@@ -115,9 +115,9 @@ export async function uploadPrice(orderId: string, userId: string, itemPrice: nu
   };
 }
 
-// Facade Pattern (design_patterns.md #6)
-// Orchestrates balance validation, balance deduction, transaction record,
-// security code generation, and order status update behind a single function call.
+// Facade Design Pattern
+/* Orchestrates balance validation, balance deduction, transaction record,
+security code generation, and order status update behind a single function call. */
 export async function payOrder(orderId: string, buyerId: string) {
   return await db.transaction(async (tx) => {
     const [row] = await tx
