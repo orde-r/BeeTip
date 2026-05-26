@@ -3,8 +3,8 @@ import db from "../db.js";
 import { ordersTable } from "../db/schema.js";
 import type { OrderDTO } from "../dtos/order.dto.js";
 import { NotFoundError } from "../errors/not-found.error.js";
-import { ForbiddenError } from "../errors/forbidden.error.js";
 import { BadRequestError } from "../errors/bad-request.error.js";
+import { validateTransition } from "./order-states.js";
 
 function toOrderDTO(row: typeof ordersTable.$inferSelect): OrderDTO {
   return {
@@ -18,6 +18,11 @@ function toOrderDTO(row: typeof ordersTable.$inferSelect): OrderDTO {
     status: row.status,
     createdAt: row.createdAt.toISOString(),
   };
+}
+
+function getOrderOrThrow(order: typeof ordersTable.$inferSelect | undefined) {
+  if (!order) throw new NotFoundError("Order not found");
+  return order;
 }
 
 export async function createOrder(buyerId: string, toLocation: string, itemDesc: string) {
@@ -49,23 +54,14 @@ export async function listAvailableOrders() {
 }
 
 export async function acceptOrder(orderId: string, kurirId: string) {
-  const [order] = await db
+  const [row] = await db
     .select()
     .from(ordersTable)
     .where(eq(ordersTable.id, orderId))
     .limit(1);
 
-  if (!order) {
-    throw new NotFoundError("Order not found");
-  }
-
-  if (order.status !== "PENDING") {
-    throw new BadRequestError("Order is not in PENDING state");
-  }
-
-  if (order.buyerId === kurirId) {
-    throw new ForbiddenError("Cannot accept your own order");
-  }
+  const order = getOrderOrThrow(row);
+  validateTransition(order.status, "accept", kurirId, order.buyerId, order.kurirId);
 
   const [updated] = await db
     .update(ordersTable)
