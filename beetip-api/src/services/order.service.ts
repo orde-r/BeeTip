@@ -1,12 +1,12 @@
 import crypto from "crypto";
-import { eq, and, sql } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/node-postgres";
+import { eq, and } from "drizzle-orm";
 import db from "../db.js";
-import { ordersTable, usersTable, transactionsTable } from "../db/schema.js";
+import { ordersTable } from "../db/schema.js";
 import type { OrderDTO } from "../dtos/order.dto.js";
 import { NotFoundError } from "../errors/not-found.error.js";
 import { BadRequestError } from "../errors/bad-request.error.js";
 import { validateTransition } from "./order-states.js";
+import { executeTransaction } from "./transaction-strategies.js";
 
 function toOrderDTO(row: typeof ordersTable.$inferSelect): OrderDTO {
   return {
@@ -115,6 +115,9 @@ export async function uploadPrice(orderId: string, userId: string, itemPrice: nu
   };
 }
 
+// Facade Pattern (design_patterns.md #6)
+// Orchestrates balance validation, balance deduction, transaction record,
+// security code generation, and order status update behind a single function call.
 export async function payOrder(orderId: string, buyerId: string) {
   return await db.transaction(async (tx) => {
     const [row] = await tx
@@ -129,30 +132,7 @@ export async function payOrder(orderId: string, buyerId: string) {
 
     const totalAmount = Number(order.itemPrice!) + Number(order.deliveryFee);
 
-    const [buyer] = await tx
-      .select()
-      .from(usersTable)
-      .where(eq(usersTable.id, buyerId))
-      .for("update")
-      .limit(1);
-
-    if (!buyer || Number(buyer.balance) < totalAmount) {
-      throw new BadRequestError("Insufficient balance");
-    }
-
-    await tx
-      .update(usersTable)
-      .set({
-        balance: sql`${usersTable.balance} - ${totalAmount.toFixed(2)}::numeric`,
-      })
-      .where(eq(usersTable.id, buyerId));
-
-    await tx.insert(transactionsTable).values({
-      userId: buyerId,
-      orderId,
-      type: "PAYMENT",
-      amount: totalAmount.toFixed(2),
-    });
+    await executeTransaction(tx, "PAYMENT", buyerId, totalAmount, orderId);
 
     const securityCode = generateSecurityCode();
 
@@ -192,19 +172,7 @@ export async function completeOrder(orderId: string, kurirId: string, securityCo
 
     const totalAmount = Number(order.itemPrice!) + Number(order.deliveryFee);
 
-    await tx
-      .update(usersTable)
-      .set({
-        balance: sql`${usersTable.balance} + ${totalAmount.toFixed(2)}::numeric`,
-      })
-      .where(eq(usersTable.id, kurirId));
-
-    await tx.insert(transactionsTable).values({
-      userId: kurirId,
-      orderId,
-      type: "EARNING",
-      amount: totalAmount.toFixed(2),
-    });
+    await executeTransaction(tx, "EARNING", kurirId, totalAmount, orderId);
 
     const [updated] = await tx
       .update(ordersTable)
