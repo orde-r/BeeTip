@@ -1,0 +1,38 @@
+import { z } from "@hono/zod-openapi";
+
+export const CreateOrderBodySchema = z
+  .object({
+    to_location: z.string().min(1, "Location is required").openapi({ example: "13th floor room 2" }),
+    item_desc: z.string().min(1, "Item description is required").openapi({ example: "Chicken rice from canteen" }),
+  })
+  .openapi("CreateOrderBody");
+
+export const OrderDTOSchema = z
+  .object({
+    id: z.string().uuid().openapi({ example: "550e8400-e29b-41d4-a716-446655440000" }),
+    buyer_id: z.string().uuid().openapi({ example: "550e8400-e29b-41d4-a716-446655440001" }),
+    kurir_id: z.string().uuid().nullable().openapi({ example: null }),
+    to_location: z.string().openapi({ example: "13th floor room 2" }),
+    item_desc: z.string().openapi({ example: "Chicken rice from canteen" }),
+    item_price: z.number().nullable().openapi({ example: null }),
+    delivery_fee: z.number().openapi({ example: 5000.0 }),
+    status: z.string().openapi({ example: "PENDING" }),
+    createdAt: z.string().datetime().openapi({ example: "2026-05-25T10:05:00.000Z" }),
+  })
+  .openapi("OrderDTO");
+
+export type OrderDTO = z.infer<typeof OrderDTOSchema>;
+
+export const CreateOrderResponseSchema = z
+  .object({
+    message: z.string().openapi({ example: "Order created successfully" }),
+    order: OrderDTOSchema,
+  })
+  .openapi("CreateOrderResponse");
+
+export const ListOrdersResponseSchema = z
+  .object({
+    orders: z.array(OrderDTOSchema),
+    total: z.number().openapi({ example: 1 }),
+  })
+  .openapi("ListOrdersResponse");
