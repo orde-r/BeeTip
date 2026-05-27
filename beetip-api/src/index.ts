@@ -6,6 +6,7 @@ import { AppError } from './errors/app-error.js'
 import { authApp } from './routes/auth.routes.js'
 import { orderApp } from './routes/order.routes.js'
 import { transactionApp } from './routes/transaction.routes.js'
+import { initSocketServer } from './socket.js'
 import type { UserPayload } from './middlewares/auth.middleware.js'
 
 type AppVariables = { Variables: { user: UserPayload } };
@@ -74,9 +75,11 @@ app.doc('/openapi.json', {
 
 app.get('/doc', swaggerUI({ url: '/openapi.json' }))
 
-serve({
+const server = serve({
   fetch: app.fetch,
   port: 3000
 }, (info) => {
   console.log(`Server is running on http://localhost:${info.port}`)
 })
+
+initSocketServer(server as any)
