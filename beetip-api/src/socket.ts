@@ -39,9 +39,10 @@ export function initSocketServer(httpServer: HttpServer) {
     const user = socket.data.user as UserPayload;
     console.log(`User connected to chat: ${user.id}`);
 
-    socket.on("join_room", async (payload: { order_id: string }) => {
+    socket.on("join_room", async (payload: any) => {
       try {
-        const { order_id } = payload;
+        const data = typeof payload === "string" ? JSON.parse(payload) : payload;
+        const { order_id } = data;
         await validateUserInOrder(order_id, user.id);
         const roomName = `room_order_${order_id}`;
         socket.join(roomName);
@@ -53,9 +54,10 @@ export function initSocketServer(httpServer: HttpServer) {
       }
     });
 
-    socket.on("send_message", async (payload: { order_id: string; content: string }) => {
+    socket.on("send_message", async (payload: any) => {
       try {
-        const { order_id, content } = payload;
+        const data = typeof payload === "string" ? JSON.parse(payload) : payload;
+        const { order_id, content } = data;
         const message = await saveMessage(order_id, user.id, content);
         
         const roomName = `room_order_${order_id}`;
