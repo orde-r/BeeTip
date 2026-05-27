@@ -10,9 +10,11 @@ import {
   CompleteOrderBodySchema,
   CompleteOrderResponseSchema,
 } from "../dtos/order.dto.js";
+import { ListMessagesResponseSchema } from "../dtos/message.dto.js";
 import { ErrorResponseSchema } from "../dtos/auth.dto.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 import { UnauthorizedError } from "../errors/unauthorized.error.js";
+import { getOrderMessages } from "../services/chat.service.js";
 import {
   createOrder,
   listAvailableOrders,
@@ -21,6 +23,7 @@ import {
   payOrder,
   completeOrder,
 } from "../services/order.service.js";
+
 
 export const orderApp = new OpenAPIHono();
 
@@ -336,5 +339,49 @@ orderApp.openapi(completeOrderRoute, async (c) => {
   const { id } = c.req.valid("param");
   const { security_code } = c.req.valid("json");
   const result = await completeOrder(id, (user as any).id, security_code);
+  return c.json(result, 200);
+});
+
+const orderMessagesRoute = createRoute({
+  method: "get",
+  path: "/orders/{id}/messages",
+  tags: ["Orders", "Chat"],
+  summary: "Get chat messages for an order",
+  security: [{ Bearer: [] }],
+  request: {
+    params: z.object({
+      id: z.string().uuid().openapi({ example: "550e8400-e29b-41d4-a716-446655440000" }),
+    }),
+  },
+  responses: {
+    200: {
+      description: "List of messages",
+      content: {
+        "application/json": {
+          schema: ListMessagesResponseSchema,
+        },
+      },
+    },
+    401: {
+      description: "Missing or invalid authentication",
+      content: { "application/json": { schema: ErrorResponseSchema } },
+    },
+    403: {
+      description: "Not a participant in this order",
+      content: { "application/json": { schema: ErrorResponseSchema } },
+    },
+    404: {
+      description: "Order not found",
+      content: { "application/json": { schema: ErrorResponseSchema } },
+    },
+  },
+});
+
+orderApp.openapi(orderMessagesRoute, async (c) => {
+  const user = c.get("user" as never);
+  if (!user) throw new UnauthorizedError();
+
+  const { id } = c.req.valid("param");
+  const result = await getOrderMessages(id, (user as any).id);
   return c.json(result, 200);
 });
