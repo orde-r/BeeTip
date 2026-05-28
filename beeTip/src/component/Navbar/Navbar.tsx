@@ -14,18 +14,22 @@ export default function Navbar() {
 
   return (
     <nav className="navbar">
-      {navMap.map((item) => (
-        <Link
-          key={item.label}
-          to={item.path}
-          className={`navbar-item ${
-            pathname === item.path ? "navbar-item-active" : ""
-          }`}
-        >
-          <span className="material-symbols-outlined">{item.icon}</span>
-          <span className="navbar-label">{item.label}</span>
-        </Link>
-      ))}
+      {navMap.map((item) => {
+        const isActive =
+          pathname === item.path ||
+          (item.path !== ROUTES.HOME && pathname.startsWith(`${item.path}/`));
+
+        return (
+          <Link
+            key={item.label}
+            to={item.path}
+            className={`navbar-item ${isActive ? "navbar-item-active" : ""}`}
+          >
+            <span className="material-symbols-outlined">{item.icon}</span>
+            <span className="navbar-label">{item.label}</span>
+          </Link>
+        );
+      })}
     </nav>
   );
 }

@@ -11,40 +11,33 @@ export default function Register({ onSwitch }: RegisterProps) {
   const { register } = useAuth();
   const navigate = useNavigate();
 
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
+    setIsSubmitting(true);
 
-    if (register(name, email, password)) {
+    const didRegister = await register(email, password);
+    setIsSubmitting(false);
+
+    if (didRegister) {
       navigate(ROUTES.HOME);
       return;
     }
 
-    setError("An account with this email already exists");
+    setError("Registration failed. Check the email or try logging in.");
   };
 
   return (
     <form className="auth-form" onSubmit={handleSubmit}>
       <div className="auth-form-header-container">
         <p className="auth-form-logo logo">BeeTip</p>
-        <p className="auth-form-desc">Lorem ipsum dolor sit amet.</p>
+        <p className="auth-form-desc">Create an account to request and deliver orders.</p>
       </div>
-
-      <label className="form-input-container">
-        Name
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Your full name"
-          required
-        />
-      </label>
 
       <label className="form-input-container">
         Email
@@ -63,7 +56,7 @@ export default function Register({ onSwitch }: RegisterProps) {
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="••••••••"
+          placeholder="At least 8 characters"
           minLength={8}
           required
         />
@@ -71,8 +64,8 @@ export default function Register({ onSwitch }: RegisterProps) {
 
       {error && <p className="auth-form-error">{error}</p>}
 
-      <button type="submit" className="primary-btn auth-form-btn">
-        Register
+      <button type="submit" className="primary-btn auth-form-btn" disabled={isSubmitting}>
+        {isSubmitting ? "Creating..." : "Register"}
       </button>
 
       <div className="auth-form-switch">
