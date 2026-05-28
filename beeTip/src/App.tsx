@@ -7,20 +7,24 @@ import Orders from "./pages/Orders/Orders";
 import AuthProvider from "./context/AuthContext/AuthProvider";
 import Chat from "./pages/Chat/Chat";
 import Profile from "./pages/Profile/Profile";
+import ThemeProvider from "./context/ThemeContext/ThemeProvider";
 
 export function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path={ROUTES.LANDING} element={<Landing />}></Route>
-          <Route path={ROUTES.AUTH} element={<Auth />}></Route>
-          <Route path={ROUTES.HOME} element={<Home />}></Route>
-          <Route path={ROUTES.ORDERS} element={<Orders />}></Route>
-          <Route path={ROUTES.CHAT} element={<Chat />}></Route>
-          <Route path={ROUTES.PROFILE} element={<Profile />}></Route>
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path={ROUTES.LANDING} element={<Landing />}></Route>
+            <Route path={ROUTES.AUTH} element={<Auth />}></Route>
+            <Route path={ROUTES.HOME} element={<Home />}></Route>
+            <Route path={ROUTES.ORDERS} element={<Orders />}></Route>
+            <Route path={ROUTES.CHAT} element={<Chat />}></Route>
+            <Route path={ROUTES.CHAT_DETAIL} element={<Chat />}></Route>
+            <Route path={ROUTES.PROFILE} element={<Profile />}></Route>
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
