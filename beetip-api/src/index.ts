@@ -20,6 +20,12 @@ const app = new OpenAPIHono<AppVariables>({
   },
 })
 
+app.use('*', cors({
+  origin: process.env.CORS_ORIGIN ?? '*',
+  allowHeaders: ['Content-Type', 'Authorization'],
+  allowMethods: ['GET', 'POST', 'OPTIONS'],
+}))
+
 app.onError((err, c) => {
   if (err instanceof AppError) {
     return c.json({ message: err.message }, err.statusCode as any);

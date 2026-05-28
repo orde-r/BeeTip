@@ -47,6 +47,12 @@ export const AuthLoginResponseSchema = z
   })
   .openapi("AuthLoginResponse");
 
+export const AuthMeResponseSchema = z
+  .object({
+    user: UserDTOSchema,
+  })
+  .openapi("AuthMeResponse");
+
 
 export const ErrorResponseSchema = z
   .object({
