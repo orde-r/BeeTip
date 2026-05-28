@@ -1,13 +1,47 @@
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
-import { TopUpBodySchema, TopUpResponseSchema } from "../dtos/transaction.dto.js";
+import {
+  ListTransactionsResponseSchema,
+  TopUpBodySchema,
+  TopUpResponseSchema,
+} from "../dtos/transaction.dto.js";
 import { ErrorResponseSchema } from "../dtos/auth.dto.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 import { UnauthorizedError } from "../errors/unauthorized.error.js";
-import { deposit } from "../services/transaction.service.js";
+import { deposit, listUserTransactions } from "../services/transaction.service.js";
 
 export const transactionApp = new OpenAPIHono();
 
 transactionApp.use("/transactions/*", authMiddleware);
+
+const listTransactionsRoute = createRoute({
+  method: "get",
+  path: "/transactions/history",
+  tags: ["Transactions"],
+  summary: "List transaction history for the authenticated user",
+  security: [{ Bearer: [] }],
+  responses: {
+    200: {
+      description: "Transaction history",
+      content: {
+        "application/json": {
+          schema: ListTransactionsResponseSchema,
+        },
+      },
+    },
+    401: {
+      description: "Missing or invalid authentication",
+      content: { "application/json": { schema: ErrorResponseSchema } },
+    },
+  },
+});
+
+transactionApp.openapi(listTransactionsRoute, async (c) => {
+  const user = c.get("user" as never);
+  if (!user) throw new UnauthorizedError();
+
+  const result = await listUserTransactions((user as any).id);
+  return c.json(result, 200);
+});
 
 const depositRoute = createRoute({
   method: "post",

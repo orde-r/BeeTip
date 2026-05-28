@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { serve } from '@hono/node-server'
 import { swaggerUI } from '@hono/swagger-ui'
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi'
+import { cors } from 'hono/cors'
 import { AppError } from './errors/app-error.js'
 import { authApp } from './routes/auth.routes.js'
 import { orderApp } from './routes/order.routes.js'

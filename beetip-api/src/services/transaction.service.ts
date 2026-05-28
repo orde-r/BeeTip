@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import db from "../db.js";
-import { usersTable } from "../db/schema.js";
+import { transactionsTable, usersTable } from "../db/schema.js";
 import { executeTransaction } from "./transaction-strategies.js";
 
 export async function deposit(userId: string, amount: number) {
@@ -19,4 +19,22 @@ export async function deposit(userId: string, amount: number) {
       new_balance: Number(user.balance),
     };
   });
+}
+
+export async function listUserTransactions(userId: string) {
+  const rows = await db
+    .select()
+    .from(transactionsTable)
+    .where(eq(transactionsTable.userId, userId))
+    .orderBy(desc(transactionsTable.createdAt));
+
+  return {
+    transactions: rows.map((row) => ({
+      id: row.id,
+      type: row.type,
+      amount: Number(row.amount),
+      createdAt: row.createdAt.toISOString(),
+    })),
+    total: rows.length,
+  };
 }
