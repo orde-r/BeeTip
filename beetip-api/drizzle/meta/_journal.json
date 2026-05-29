@@ -29,6 +29,20 @@
       "when": 1779817735016,
       "tag": "0003_bouncy_freak",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1779920000000,
+      "tag": "0004_add_order_receipt_image_url",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1779930000000,
+      "tag": "0005_receipt_image_text",
+      "breakpoints": true
     }
   ]
 }

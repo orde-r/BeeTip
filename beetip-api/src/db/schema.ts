@@ -1,4 +1,4 @@
-import { numeric, pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import { numeric, pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 
 export const usersTable = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -16,6 +16,7 @@ export const ordersTable = pgTable("orders", {
   toLocation: varchar("to_location", { length: 500 }).notNull(),
   itemDesc: varchar("item_desc", { length: 1000 }).notNull(),
   itemPrice: numeric("item_price", { precision: 12, scale: 2 }),
+  receiptImageUrl: text("receipt_image_url"),
   deliveryFee: numeric("delivery_fee", { precision: 12, scale: 2 }).notNull().default("5000.00"),
   status: varchar("status", { length: 20 }).notNull().default("PENDING"),
   securityCode: varchar("security_code", { length: 10 }),
