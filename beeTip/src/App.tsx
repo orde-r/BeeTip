@@ -37,7 +37,14 @@ export function App() {
           <Routes>
             <Route path={ROUTES.LANDING} element={<Landing />}></Route>
             <Route path={ROUTES.AUTH} element={<Auth />}></Route>
-            <Route path={ROUTES.HOME} element={<Home />}></Route>
+            <Route
+              path={ROUTES.HOME}
+              element={
+                <ProtectedRoute>
+                  <Home />
+                </ProtectedRoute>
+              }
+            ></Route>
             <Route
               path={ROUTES.ORDERS}
               element={
