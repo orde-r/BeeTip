@@ -41,7 +41,14 @@ export function App() {
             <Route path={ROUTES.ORDERS} element={<Orders />}></Route>
             <Route path={ROUTES.CHAT} element={<Chat />}></Route>
             <Route path={ROUTES.CHAT_DETAIL} element={<Chat />}></Route>
-            <Route path={ROUTES.PROFILE} element={<Profile />}></Route>
+            <Route
+              path={ROUTES.PROFILE}
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            ></Route>
           </Routes>
         </BrowserRouter>
       </AuthProvider>
