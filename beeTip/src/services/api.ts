@@ -96,6 +96,71 @@ async function apiRequest<T>(path: string, options: ApiRequestOptions = {}): Pro
   return (await response.json()) as T;
 }
 
+export const orderApi = {
+  myOrders: (token: string) =>
+    apiRequest<OrdersResponse>("/orders/my", {
+      token,
+    }),
+  available: (token: string) =>
+    apiRequest<OrdersResponse>("/orders/available", {
+      token,
+    }),
+  getById: (token: string, orderId: string) =>
+    apiRequest<{ order: Order }>(`/orders/${orderId}`, {
+      token,
+    }),
+  create: (token: string, toLocation: string, itemDesc: string) =>
+    apiRequest<OrderResponse>("/orders", {
+      method: "POST",
+      token,
+      body: {
+        to_location: toLocation,
+        item_desc: itemDesc,
+      },
+    }),
+  accept: (token: string, orderId: string) =>
+    apiRequest<OrderResponse>(`/orders/${orderId}/accept`, {
+      method: "POST",
+      token,
+    }),
+  uploadPrice: (
+    token: string,
+    orderId: string,
+    itemPrice: number,
+    receiptImageUrl?: string,
+  ) =>
+    apiRequest<OrderResponse>(`/orders/${orderId}/price`, {
+      method: "POST",
+      token,
+      body: {
+        item_price: itemPrice,
+        ...(receiptImageUrl ? { receipt_image_url: receiptImageUrl } : {}),
+      },
+    }),
+  pay: (token: string, orderId: string) =>
+    apiRequest<PayOrderResponse>(`/orders/${orderId}/pay`, {
+      method: "POST",
+      token,
+    }),
+  complete: (token: string, orderId: string, securityCode: string) =>
+    apiRequest<OrderResponse>(`/orders/${orderId}/complete`, {
+      method: "POST",
+      token,
+      body: {
+        security_code: securityCode,
+      },
+    }),
+  cancel: (token: string, orderId: string) =>
+    apiRequest<OrderResponse>(`/orders/${orderId}/cancel`, {
+      method: "POST",
+      token,
+    }),
+  messages: (token: string, orderId: string) =>
+    apiRequest<MessagesResponse>(`/orders/${orderId}/messages`, {
+      token,
+    }),
+};
+
 export const transactionApi = {
   deposit: (token: string, amount: number) =>
     apiRequest<DepositResponse>("/transactions/deposit", {
