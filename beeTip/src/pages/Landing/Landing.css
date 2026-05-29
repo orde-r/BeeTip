@@ -9,3 +9,9 @@
 .landing-logo {
   font-size: 3rem;
 }
+
+.landing-desc {
+  max-width: 19rem;
+  color: var(--gray-600);
+  line-height: 1.6;
+}
