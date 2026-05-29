@@ -34,6 +34,16 @@ Routes & Handlers: Define Zod-OpenAPI routes (method, path, schemas) and bind a 
 Services: Contain the business logic. Implemented as exported functions rather than classes.
 Database (Drizzle): Drizzle is used for database interactions. Services can directly use the Drizzle database instance or dedicated query functions.
 
+### Design Patterns Reference
+The backend uses these Refactoring Guru design pattern names. More detail is available in `docs/design_patterns.md`.
+
+* **State Pattern:** `beetip-api/src/services/order-states.ts` handles order status transitions and role guards.
+* **Observer Pattern:** `beetip-api/src/socket.ts` uses Socket.io rooms to broadcast chat messages and order status updates.
+* **Chain of Responsibility:** `beetip-api/src/middlewares/auth.middleware.ts` participates in the Hono middleware pipeline.
+* **Strategy Pattern:** `beetip-api/src/services/transaction-strategies.ts` selects deposit, payment, or earning logic by transaction type.
+* **Factory Method:** `beetip-api/src/errors/app-error.ts` defines the shared AppError contract used by concrete HTTP error classes.
+* **Facade Pattern:** `beetip-api/src/services/order.service.ts` exposes payment and completion flows through service functions.
+
 ### Standard Practices
 #### Global Error Handling
 We use Hono's built-in global error catching mechanism in `src/index.ts` via `app.onError()`.
