@@ -1,8 +1,32 @@
-import type { User } from "../../types/user";
-import type { Order } from "../../types/order";
 // import type { Message } from "../../types/chat";
 // import type { Transaction } from "../../types/payment";
 // import type { Rating } from "../../types/rating";
+
+interface MockUser {
+  id: string;
+  name: string;
+  email: string;
+  password: string;
+  walletBalance: number;
+  createdAt: string;
+}
+
+interface MockOrder {
+  id: string;
+  customer: MockUser;
+  courier: MockUser | null;
+  location: string;
+  detail: string;
+  budgetCap: number;
+  status: "OPEN" | "ACCEPTED" | "PRICE_PROPOSED" | "DELIVERING" | "DELIVERED";
+  proposedPrice: number | null;
+  itemBreakdown: unknown[] | null;
+  receiptImageUrl: string | null;
+  hadDispute: boolean;
+  serviceFee: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
 /**
  * Test accounts (all passwords: "password123")
@@ -21,7 +45,7 @@ import type { Order } from "../../types/order";
  *  o7  (u1, courier u2)  PRICE_PROPOSED — disputed items handled via chat
  */
 
-export const mockUsers: User[] = [
+export const mockUsers: MockUser[] = [
   {
     id: "u1",
     name: "Bryan",
@@ -48,7 +72,7 @@ export const mockUsers: User[] = [
   },
 ];
 
-export const mockOrders: Order[] = [
+export const mockOrders: MockOrder[] = [
   {
     id: "o1",
     customer: mockUsers[0],
