@@ -1,0 +1,29 @@
+.orders-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.orders-title {
+  font-size: 1.45rem;
+  font-weight: 700;
+}
+
+.orders-subtitle {
+  color: var(--gray-500);
+  font-size: 0.85rem;
+}
+
+.orders-icon-btn {
+  width: 2.75rem;
+  height: 2.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 0.75rem;
+  background: var(--primary-100);
+  color: var(--primary-600);
+  flex-shrink: 0;
+}

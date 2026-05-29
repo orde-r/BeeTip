@@ -1,0 +1,41 @@
+.orders-search {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.orders-search-label {
+  color: var(--gray-700);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.orders-search-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.orders-search-input .material-symbols-outlined {
+  position: absolute;
+  left: 1rem;
+  color: var(--gray-400);
+}
+
+.orders-search-input input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 3rem;
+  border-radius: 0.75rem;
+  border: 0.0625rem solid var(--gray-300);
+  background: var(--white);
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--gray-900);
+  transition: all 0.3s ease;
+}
+
+.orders-search-input input:focus {
+  outline: none;
+  border-color: var(--primary-500);
+}
