@@ -1,7 +1,7 @@
 export interface Message {
   id: string;
-  orderId: string;
-  senderId: string;
-  text: string;
-  createdAt: string;
+  order_id: string;
+  sender_id: string;
+  content: string;
+  timestamp: string;
 }
