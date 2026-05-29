@@ -1,0 +1,23 @@
+.chat {
+  padding: 1.5rem;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  align-items: flex-start;
+  flex-direction: column;
+}
+
+.chat-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.chat-subtitle {
+  color: var(--gray-500);
+  font-size: 0.85rem;
+}

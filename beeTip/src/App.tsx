@@ -46,8 +46,22 @@ export function App() {
                 </ProtectedRoute>
               }
             ></Route>
-            <Route path={ROUTES.CHAT} element={<Chat />}></Route>
-            <Route path={ROUTES.CHAT_DETAIL} element={<Chat />}></Route>
+            <Route
+              path={ROUTES.CHAT}
+              element={
+                <ProtectedRoute>
+                  <Chat />
+                </ProtectedRoute>
+              }
+            ></Route>
+            <Route
+              path={ROUTES.CHAT_DETAIL}
+              element={
+                <ProtectedRoute>
+                  <Chat />
+                </ProtectedRoute>
+              }
+            ></Route>
             <Route
               path={ROUTES.PROFILE}
               element={
