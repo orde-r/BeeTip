@@ -38,7 +38,14 @@ export function App() {
             <Route path={ROUTES.LANDING} element={<Landing />}></Route>
             <Route path={ROUTES.AUTH} element={<Auth />}></Route>
             <Route path={ROUTES.HOME} element={<Home />}></Route>
-            <Route path={ROUTES.ORDERS} element={<Orders />}></Route>
+            <Route
+              path={ROUTES.ORDERS}
+              element={
+                <ProtectedRoute>
+                  <Orders />
+                </ProtectedRoute>
+              }
+            ></Route>
             <Route path={ROUTES.CHAT} element={<Chat />}></Route>
             <Route path={ROUTES.CHAT_DETAIL} element={<Chat />}></Route>
             <Route
