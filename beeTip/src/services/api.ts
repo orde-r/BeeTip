@@ -96,6 +96,28 @@ async function apiRequest<T>(path: string, options: ApiRequestOptions = {}): Pro
   return (await response.json()) as T;
 }
 
+export const authApi = {
+  register: (email: string, password: string) =>
+    apiRequest<UserResponse>("/auth/register", {
+      method: "POST",
+      body: { email, password },
+    }),
+  login: (email: string, password: string) =>
+    apiRequest<AuthResponse>("/auth/login", {
+      method: "POST",
+      body: { email, password },
+    }),
+  me: (token: string) =>
+    apiRequest<UserResponse>("/auth/me", {
+      token,
+    }),
+  logout: (token: string | null) =>
+    apiRequest<{ message: string }>("/auth/logout", {
+      method: "POST",
+      token,
+    }),
+};
+
 export const orderApi = {
   myOrders: (token: string) =>
     apiRequest<OrdersResponse>("/orders/my", {
@@ -157,21 +179,6 @@ export const orderApi = {
     }),
   messages: (token: string, orderId: string) =>
     apiRequest<MessagesResponse>(`/orders/${orderId}/messages`, {
-      token,
-    }),
-};
-
-export const transactionApi = {
-  deposit: (token: string, amount: number) =>
-    apiRequest<DepositResponse>("/transactions/deposit", {
-      method: "POST",
-      token,
-      body: {
-        amount,
-      },
-    }),
-  history: (token: string) =>
-    apiRequest<TransactionsResponse>("/transactions/history", {
       token,
     }),
 };
