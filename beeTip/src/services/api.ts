@@ -49,13 +49,21 @@ interface TransactionsResponse {
   total: number;
 }
 
+export interface ValidationErrorDetail {
+  path: string[];
+  message: string;
+  code: string;
+}
+
 export class ApiError extends Error {
   status: number;
+  details?: ValidationErrorDetail[];
 
-  constructor(message: string, status: number) {
+  constructor(message: string, status: number, details?: ValidationErrorDetail[]) {
     super(message);
     this.name = "ApiError";
     this.status = status;
+    this.details = details;
   }
 }
 
@@ -78,15 +86,21 @@ async function apiRequest<T>(path: string, options: ApiRequestOptions = {}): Pro
 
   if (!response.ok) {
     let message = "Something went wrong";
+    let details: ValidationErrorDetail[] | undefined;
 
     try {
-      const error = (await response.json()) as { message?: string; error?: string };
+      const error = (await response.json()) as {
+        message?: string;
+        error?: string;
+        errors?: ValidationErrorDetail[];
+      };
       message = error.message ?? error.error ?? message;
+      details = error.errors;
     } catch {
       message = response.statusText || message;
     }
 
-    throw new ApiError(message, response.status);
+    throw new ApiError(message, response.status, details);
   }
 
   if (response.status === 204) {

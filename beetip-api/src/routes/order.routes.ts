@@ -13,7 +13,7 @@ import {
   OrderDTOSchema,
 } from "../dtos/order.dto.js";
 import { ListMessagesResponseSchema } from "../dtos/message.dto.js";
-import { ErrorResponseSchema } from "../dtos/auth.dto.js";
+import { ErrorResponseSchema } from "../dtos/error.dto.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 import { UnauthorizedError } from "../errors/unauthorized.error.js";
 import { getOrderMessages } from "../services/chat.service.js";
@@ -31,7 +31,9 @@ import {
 import { emitOrderStatusChanged } from "../socket.js";
 
 
-export const orderApp = new OpenAPIHono();
+import { validationHook } from "../validation.js";
+
+export const orderApp = new OpenAPIHono({ defaultHook: validationHook });
 
 orderApp.use("/orders", authMiddleware);
 orderApp.use("/orders/*", authMiddleware);
