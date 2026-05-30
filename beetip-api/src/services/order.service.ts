@@ -20,15 +20,15 @@ function toOrderDTO(
 ): OrderDTO {
   return {
     id: row.id,
-    buyer_id: row.buyerId,
-    buyer_email: buyerEmail,
-    kurir_id: row.kurirId ?? null,
-    kurir_email: kurirEmail,
-    to_location: row.toLocation,
-    item_desc: row.itemDesc,
-    item_price: row.itemPrice ? Number(row.itemPrice) : null,
-    receipt_image_url: row.receiptImageUrl ?? null,
-    delivery_fee: Number(row.deliveryFee),
+    buyerId: row.buyerId,
+    buyerEmail,
+    kurirId: row.kurirId ?? null,
+    kurirEmail,
+    toLocation: row.toLocation,
+    itemDesc: row.itemDesc,
+    itemPrice: row.itemPrice ? Number(row.itemPrice) : null,
+    receiptImageUrl: row.receiptImageUrl ?? null,
+    deliveryFee: Number(row.deliveryFee),
     status: row.status,
     createdAt: row.createdAt.toISOString(),
   };
@@ -295,7 +295,7 @@ export async function payOrder(orderId: string, buyerId: string) {
 
     return {
       message: "Payment successful",
-      security_code: securityCode,
+      securityCode,
       order: toOrderDTO(updated, emails.buyerEmail, emails.kurirEmail),
     };
   });

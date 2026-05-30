@@ -41,7 +41,7 @@ export default function Profile() {
 
     try {
       const response = await transactionApi.deposit(accessToken, depositAmount);
-      updateBalance(response.new_balance);
+      updateBalance(response.newBalance);
       setAmount("");
       setMessage("Balance updated");
     } catch (err) {

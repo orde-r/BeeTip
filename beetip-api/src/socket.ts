@@ -55,12 +55,12 @@ export function initSocketServer(httpServer: HttpServer) {
     socket.on("join_room", async (payload: any) => {
       try {
         const data = typeof payload === "string" ? JSON.parse(payload) : payload;
-        const { order_id } = data;
-        await validateUserInOrder(order_id, user.id);
-        const roomName = `room_order_${order_id}`;
+        const { orderId } = data;
+        await validateUserInOrder(orderId, user.id);
+        const roomName = `room_order_${orderId}`;
         socket.join(roomName);
         console.log(`User ${user.id} joined room ${roomName}`);
-        socket.emit("room_joined", { order_id, room: roomName });
+        socket.emit("room_joined", { orderId, room: roomName });
       } catch (error: any) {
         socket.emit("error", { message: error.message || "Failed to join room" });
       }
@@ -69,10 +69,10 @@ export function initSocketServer(httpServer: HttpServer) {
     socket.on("send_message", async (payload: any) => {
       try {
         const data = typeof payload === "string" ? JSON.parse(payload) : payload;
-        const { order_id, content } = data;
-        const message = await saveMessage(order_id, user.id, content);
+        const { orderId, content } = data;
+        const message = await saveMessage(orderId, user.id, content);
         
-        const roomName = `room_order_${order_id}`;
+        const roomName = `room_order_${orderId}`;
         chatNamespace.to(roomName).emit("receive_message", message);
       } catch (error: any) {
         socket.emit("error", { message: error.message || "Failed to send message" });

@@ -8,8 +8,8 @@ import { ForbiddenError } from "../errors/forbidden.error.js";
 function toMessageDTO(row: typeof messagesTable.$inferSelect): MessageDTO {
   return {
     id: row.id,
-    order_id: row.orderId,
-    sender_id: row.senderId,
+    orderId: row.orderId,
+    senderId: row.senderId,
     content: row.content,
     timestamp: row.createdAt.toISOString(),
   };

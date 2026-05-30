@@ -32,7 +32,7 @@ interface OrdersResponse {
 }
 
 interface PayOrderResponse extends OrderResponse {
-  security_code: string;
+  securityCode: string;
 }
 
 interface MessagesResponse {
@@ -41,7 +41,7 @@ interface MessagesResponse {
 
 interface DepositResponse {
   message: string;
-  new_balance: number;
+  newBalance: number;
 }
 
 interface TransactionsResponse {
@@ -150,8 +150,8 @@ export const orderApi = {
       method: "POST",
       token,
       body: {
-        to_location: toLocation,
-        item_desc: itemDesc,
+        toLocation,
+        itemDesc: itemDesc,
       },
     }),
   accept: (token: string, orderId: string) =>
@@ -169,8 +169,8 @@ export const orderApi = {
       method: "POST",
       token,
       body: {
-        item_price: itemPrice,
-        ...(receiptImageUrl ? { receipt_image_url: receiptImageUrl } : {}),
+        itemPrice,
+        ...(receiptImageUrl ? { receiptImageUrl } : {}),
       },
     }),
   pay: (token: string, orderId: string) =>
@@ -183,7 +183,7 @@ export const orderApi = {
       method: "POST",
       token,
       body: {
-        security_code: securityCode,
+        securityCode,
       },
     }),
   cancel: (token: string, orderId: string) =>

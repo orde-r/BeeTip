@@ -21,7 +21,7 @@ export const TopUpResponseSchema = z
   .object({
     message: z.string().openapi({ example: "Deposit successful" }),
     transaction: TransactionDTOSchema,
-    new_balance: z.number().max(9999999999.99).openapi({ example: 100000.0 }),
+    newBalance: z.number().max(9999999999.99).openapi({ example: 100000.0 }),
   })
   .openapi("TopUpResponse");
 

@@ -2,6 +2,6 @@ export interface User {
   id: string;
   email: string;
   balance: number;
-  current_role: string;
+  currentRole: string;
   createdAt?: string;
 }

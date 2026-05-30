@@ -30,8 +30,8 @@ type ChatSocket = Socket<
     error: (payload: { message?: string }) => void;
   },
   {
-    join_room: (payload: { order_id: string }) => void;
-    send_message: (payload: { order_id: string; content: string }) => void;
+    join_room: (payload: { orderId: string }) => void;
+    send_message: (payload: { orderId: string; content: string }) => void;
   }
 >;
 
@@ -131,7 +131,7 @@ export default function Chat() {
     });
 
     socketRef.current = socket;
-    socket.emit("join_room", { order_id: orderId });
+    socket.emit("join_room", { orderId });
 
     socket.on("receive_message", (message) => {
       setMessages((prev) => {
@@ -224,7 +224,7 @@ export default function Chat() {
     try {
       const response = await orderApi.pay(accessToken, order.id);
       setOrder(response.order);
-      saveSecurityCode(response.order.id, response.security_code);
+      saveSecurityCode(response.order.id, response.securityCode);
       await refreshUser();
     } catch (err) {
       setError(getErrorMessage(err, "Failed to pay order"));
@@ -280,7 +280,7 @@ export default function Chat() {
     if (!content) return;
 
     socketRef.current?.emit("send_message", {
-      order_id: order.id,
+      orderId: order.id,
       content,
     });
     setDraftMessage("");

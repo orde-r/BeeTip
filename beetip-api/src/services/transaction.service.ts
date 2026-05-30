@@ -16,7 +16,7 @@ export async function deposit(userId: string, amount: number) {
     return {
       message: "Deposit successful",
       transaction: txRecord,
-      new_balance: Number(user.balance),
+      newBalance: Number(user.balance),
     };
   });
 }
