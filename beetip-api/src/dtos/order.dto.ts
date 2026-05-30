@@ -1,12 +1,5 @@
 import { z } from "@hono/zod-openapi";
 
-export const CreateOrderBodySchema = z
-  .object({
-    toLocation: z.string().min(1, "Location is required").openapi({ example: "13th floor room 2" }),
-    itemDesc: z.string().min(1, "Item description is required").openapi({ example: "Chicken rice from canteen" }),
-  })
-  .openapi("CreateOrderBody");
-
 export const OrderDTOSchema = z
   .object({
     id: z.string().uuid().openapi({ example: "550e8400-e29b-41d4-a716-446655440000" }),
@@ -27,26 +20,12 @@ export const OrderDTOSchema = z
 
 export type OrderDTO = z.infer<typeof OrderDTOSchema>;
 
-export const CreateOrderResponseSchema = z
+export const CreateOrderBodySchema = z
   .object({
-    message: z.string().openapi({ example: "Order created successfully" }),
-    order: OrderDTOSchema,
+    toLocation: z.string().min(1, "Location is required").openapi({ example: "13th floor room 2" }),
+    itemDesc: z.string().min(1, "Item description is required").openapi({ example: "Chicken rice from canteen" }),
   })
-  .openapi("CreateOrderResponse");
-
-export const ListOrdersResponseSchema = z
-  .object({
-    orders: z.array(OrderDTOSchema),
-    total: z.number().openapi({ example: 1 }),
-  })
-  .openapi("ListOrdersResponse");
-
-export const AcceptOrderResponseSchema = z
-  .object({
-    message: z.string().openapi({ example: "Order accepted successfully" }),
-    order: OrderDTOSchema,
-  })
-  .openapi("AcceptOrderResponse");
+  .openapi("CreateOrderBody");
 
 export const UploadPriceBodySchema = z
   .object({
@@ -55,12 +34,25 @@ export const UploadPriceBodySchema = z
   })
   .openapi("UploadPriceBody");
 
-export const UploadPriceResponseSchema = z
+export const CompleteOrderBodySchema = z
   .object({
-    message: z.string().openapi({ example: "Price updated successfully" }),
-    order: OrderDTOSchema,
+    securityCode: z.string().min(1, "Security code is required").openapi({ example: "123456" }),
   })
-  .openapi("UploadPriceResponse");
+  .openapi("CompleteOrderBody");
+
+const createOrderResponseSchema = (messageExample: string, schemaName: string) =>
+  z
+    .object({
+      message: z.string().openapi({ example: messageExample }),
+      order: OrderDTOSchema,
+    })
+    .openapi(schemaName);
+
+export const CreateOrderResponseSchema = createOrderResponseSchema("Order created successfully", "CreateOrderResponse");
+export const AcceptOrderResponseSchema = createOrderResponseSchema("Order accepted successfully", "AcceptOrderResponse");
+export const UploadPriceResponseSchema = createOrderResponseSchema("Price updated successfully", "UploadPriceResponse");
+export const CompleteOrderResponseSchema = createOrderResponseSchema("Order completed successfully", "CompleteOrderResponse");
+export const CancelOrderResponseSchema = createOrderResponseSchema("Order cancelled successfully", "CancelOrderResponse");
 
 export const PayOrderResponseSchema = z
   .object({
@@ -70,22 +62,9 @@ export const PayOrderResponseSchema = z
   })
   .openapi("PayOrderResponse");
 
-export const CompleteOrderBodySchema = z
+export const ListOrdersResponseSchema = z
   .object({
-    securityCode: z.string().min(1, "Security code is required").openapi({ example: "123456" }),
+    orders: z.array(OrderDTOSchema),
+    total: z.number().openapi({ example: 1 }),
   })
-  .openapi("CompleteOrderBody");
-
-export const CompleteOrderResponseSchema = z
-  .object({
-    message: z.string().openapi({ example: "Order completed successfully" }),
-    order: OrderDTOSchema,
-  })
-  .openapi("CompleteOrderResponse");
-
-export const CancelOrderResponseSchema = z
-  .object({
-    message: z.string().openapi({ example: "Order cancelled successfully" }),
-    order: OrderDTOSchema,
-  })
-  .openapi("CancelOrderResponse");
+  .openapi("ListOrdersResponse");

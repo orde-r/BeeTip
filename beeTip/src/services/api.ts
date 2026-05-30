@@ -22,7 +22,7 @@ interface UserResponse {
 }
 
 interface OrderResponse {
-  message?: string;
+  message: string;
   order: Order;
 }
 
