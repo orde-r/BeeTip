@@ -21,6 +21,7 @@ export const OrderDTOSchema = z
     receiptImageUrl: z.string().nullable().openapi({ example: null }),
     status: z.string().openapi({ example: "PENDING" }),
     createdAt: z.string().datetime().openapi({ example: "2026-05-25T10:05:00.000Z" }),
+    updatedAt: z.string().datetime().openapi({ example: "2026-05-25T10:06:00.000Z" }),
   })
   .openapi("OrderDTO");
 

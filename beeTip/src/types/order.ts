@@ -13,5 +13,5 @@ export interface Order {
   deliveryFee: number;
   status: OrderStatus;
   createdAt: string;
-  updatedAt?: string;
+  updatedAt: string;
 }

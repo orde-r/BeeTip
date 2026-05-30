@@ -31,6 +31,7 @@ function toOrderDTO(
     deliveryFee: Number(row.deliveryFee),
     status: row.status,
     createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
   };
 }
 
