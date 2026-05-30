@@ -16,9 +16,9 @@ export const OrderDTOSchema = z
     kurir_email: z.string().email().nullable().openapi({ example: null }),
     to_location: z.string().openapi({ example: "13th floor room 2" }),
     item_desc: z.string().openapi({ example: "Chicken rice from canteen" }),
-    item_price: z.number().nullable().openapi({ example: null }),
+    item_price: z.number().max(9999999999.99).nullable().openapi({ example: null }),
+    delivery_fee: z.number().max(9999999999.99).openapi({ example: 5000.0 }),
     receipt_image_url: z.string().nullable().openapi({ example: null }),
-    delivery_fee: z.number().openapi({ example: 5000.0 }),
     status: z.string().openapi({ example: "PENDING" }),
     createdAt: z.string().datetime().openapi({ example: "2026-05-25T10:05:00.000Z" }),
   })
@@ -49,7 +49,7 @@ export const AcceptOrderResponseSchema = z
 
 export const UploadPriceBodySchema = z
   .object({
-    item_price: z.number().positive("Price must be positive").openapi({ example: 25000.0 }),
+    item_price: z.number().positive("Price must be positive").max(9999999999.99).openapi({ example: 25000.0 }),
     receipt_image_url: z.string().optional().openapi({ example: "data:image/jpeg;base64,..." }),
   })
   .openapi("UploadPriceBody");
