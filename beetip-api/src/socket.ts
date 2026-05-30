@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import { saveMessage, validateUserInOrder } from "./services/chat.service.js";
 import type { UserPayload } from "./middlewares/auth.middleware.js";
 import type { OrderDTO } from "./dtos/order.dto.js";
+import { UnauthorizedError } from "./errors/unauthorized.error.js";
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 let chatNamespaceRef: Namespace | null = null;
@@ -29,17 +30,18 @@ export function initSocketServer(httpServer: HttpServer) {
   const chatNamespace = io.of("/chat");
   chatNamespaceRef = chatNamespace;
 
+
   chatNamespace.use((socket, next) => {
     const token = socket.handshake.auth.token || socket.handshake.headers.authorization?.slice(7);
     if (!token) {
-      return next(new Error("Authentication error: Missing token"));
+      return next(new UnauthorizedError("Missing token"));
     }
     try {
       const payload = jwt.verify(token, JWT_SECRET) as UserPayload;
       socket.data.user = payload;
       next();
     } catch (err) {
-      next(new Error("Authentication error: Invalid token"));
+      next(new UnauthorizedError("Invalid token"));
     }
   });
 
