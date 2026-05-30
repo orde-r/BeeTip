@@ -15,16 +15,20 @@ export function emitOrderStatusChanged(order: OrderDTO) {
 }
 
 export function initSocketServer(httpServer: HttpServer) {
+  const corsOrigin = process.env.CORS_ORIGIN;
+  if (!corsOrigin) {
+    throw new Error('CORS_ORIGIN is not set in .env');
+  }
+
   const io = new Server(httpServer, {
     cors: {
-      origin: "*", // Adjust for production
+      origin: corsOrigin.includes(',') ? corsOrigin.split(',').map(o => o.trim()) : corsOrigin,
     },
   });
 
   const chatNamespace = io.of("/chat");
   chatNamespaceRef = chatNamespace;
 
-  // Authentication Middleware
   chatNamespace.use((socket, next) => {
     const token = socket.handshake.auth.token || socket.handshake.headers.authorization?.slice(7);
     if (!token) {
@@ -56,7 +60,6 @@ export function initSocketServer(httpServer: HttpServer) {
         const roomName = `room_order_${order_id}`;
         socket.join(roomName);
         console.log(`User ${user.id} joined room ${roomName}`);
-        // Optionally acknowledge success
         socket.emit("room_joined", { order_id, room: roomName });
       } catch (error: any) {
         socket.emit("error", { message: error.message || "Failed to join room" });
@@ -70,7 +73,6 @@ export function initSocketServer(httpServer: HttpServer) {
         const message = await saveMessage(order_id, user.id, content);
         
         const roomName = `room_order_${order_id}`;
-        // Broadcast to everyone in the room, including sender
         chatNamespace.to(roomName).emit("receive_message", message);
       } catch (error: any) {
         socket.emit("error", { message: error.message || "Failed to send message" });

@@ -18,10 +18,18 @@ const app = new OpenAPIHono<AppVariables>({
 })
 
 app.use('*', cors({
-  origin: process.env.CORS_ORIGIN ?? '*',
+  origin: getCorsOrigin(),
   allowHeaders: ['Content-Type', 'Authorization'],
   allowMethods: ['GET', 'POST', 'OPTIONS'],
 }))
+
+function getCorsOrigin(): string | string[] {
+  const origin = process.env.CORS_ORIGIN;
+  if (!origin) {
+    throw new Error('CORS_ORIGIN is not set in .env');
+  }
+  return origin.includes(',') ? origin.split(',').map(o => o.trim()) : origin;
+}
 
 app.onError((err, c) => {
   if (err instanceof AppError) {
