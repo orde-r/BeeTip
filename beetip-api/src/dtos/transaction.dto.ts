@@ -24,3 +24,10 @@ export const TopUpResponseSchema = z
     new_balance: z.number().max(9999999999.99).openapi({ example: 100000.0 }),
   })
   .openapi("TopUpResponse");
+
+export const ListTransactionsResponseSchema = z
+  .object({
+    transactions: z.array(TransactionDTOSchema),
+    total: z.number().openapi({ example: 1 }),
+  })
+  .openapi("ListTransactionsResponse");

@@ -1,10 +1,18 @@
 import type { Server as HttpServer } from "node:http";
-import { Server } from "socket.io";
+import { Server, type Namespace } from "socket.io";
 import jwt from "jsonwebtoken";
 import { saveMessage, validateUserInOrder } from "./services/chat.service.js";
 import type { UserPayload } from "./middlewares/auth.middleware.js";
+import type { OrderDTO } from "./dtos/order.dto.js";
 
 const JWT_SECRET = process.env.JWT_SECRET!;
+let chatNamespaceRef: Namespace | null = null;
+
+export function emitOrderStatusChanged(order: OrderDTO) {
+  chatNamespaceRef?.to(`room_order_${order.id}`).emit("order_status_changed", {
+    order,
+  });
+}
 
 export function initSocketServer(httpServer: HttpServer) {
   const io = new Server(httpServer, {
@@ -14,6 +22,7 @@ export function initSocketServer(httpServer: HttpServer) {
   });
 
   const chatNamespace = io.of("/chat");
+  chatNamespaceRef = chatNamespace;
 
   // Authentication Middleware
   chatNamespace.use((socket, next) => {

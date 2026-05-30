@@ -1,21 +1,33 @@
 import crypto from "crypto";
-import { eq, and } from "drizzle-orm";
+import { eq, and, or, desc } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 import db from "../db.js";
-import { ordersTable } from "../db/schema.js";
+import { ordersTable, usersTable } from "../db/schema.js";
 import type { OrderDTO } from "../dtos/order.dto.js";
 import { NotFoundError } from "../errors/not-found.error.js";
 import { BadRequestError } from "../errors/bad-request.error.js";
+import { ForbiddenError } from "../errors/forbidden.error.js";
 import { validateTransition } from "./order-states.js";
 import { executeTransaction } from "./transaction-strategies.js";
 
-function toOrderDTO(row: typeof ordersTable.$inferSelect): OrderDTO {
+const buyerUsers = alias(usersTable, "buyer_users");
+const kurirUsers = alias(usersTable, "kurir_users");
+
+function toOrderDTO(
+  row: typeof ordersTable.$inferSelect,
+  buyerEmail: string | null = null,
+  kurirEmail: string | null = null,
+): OrderDTO {
   return {
     id: row.id,
     buyer_id: row.buyerId,
+    buyer_email: buyerEmail,
     kurir_id: row.kurirId ?? null,
+    kurir_email: kurirEmail,
     to_location: row.toLocation,
     item_desc: row.itemDesc,
     item_price: row.itemPrice ? Number(row.itemPrice) : null,
+    receipt_image_url: row.receiptImageUrl ?? null,
     delivery_fee: Number(row.deliveryFee),
     status: row.status,
     createdAt: row.createdAt.toISOString(),
@@ -43,19 +55,101 @@ export async function createOrder(buyerId: string, toLocation: string, itemDesc:
 
   return {
     message: "Order created successfully",
-    order: toOrderDTO(newOrder),
+    order: await getOrderDTOById(newOrder.id),
   };
 }
 
 export async function listAvailableOrders() {
   const rows = await db
-    .select()
+    .select({
+      order: ordersTable,
+      buyerEmail: buyerUsers.email,
+      kurirEmail: kurirUsers.email,
+    })
     .from(ordersTable)
+    .leftJoin(buyerUsers, eq(ordersTable.buyerId, buyerUsers.id))
+    .leftJoin(kurirUsers, eq(ordersTable.kurirId, kurirUsers.id))
     .where(eq(ordersTable.status, "PENDING"));
 
   return {
-    orders: rows.map(toOrderDTO),
+    orders: rows.map((row) =>
+      toOrderDTO(row.order, row.buyerEmail, row.kurirEmail),
+    ),
     total: rows.length,
+  };
+}
+
+async function getParticipantEmails(buyerId: string, kurirId: string | null) {
+  const userIds = kurirId ? [buyerId, kurirId] : [buyerId];
+  const rows = await db
+    .select({
+      id: usersTable.id,
+      email: usersTable.email,
+    })
+    .from(usersTable)
+    .where(or(...userIds.map((userId) => eq(usersTable.id, userId))));
+
+  return {
+    buyerEmail: rows.find((row) => row.id === buyerId)?.email ?? null,
+    kurirEmail: kurirId
+      ? rows.find((row) => row.id === kurirId)?.email ?? null
+      : null,
+  };
+}
+
+async function getOrderDTOById(orderId: string) {
+  const [row] = await db
+    .select({
+      order: ordersTable,
+      buyerEmail: buyerUsers.email,
+      kurirEmail: kurirUsers.email,
+    })
+    .from(ordersTable)
+    .leftJoin(buyerUsers, eq(ordersTable.buyerId, buyerUsers.id))
+    .leftJoin(kurirUsers, eq(ordersTable.kurirId, kurirUsers.id))
+    .where(eq(ordersTable.id, orderId))
+    .limit(1);
+
+  if (!row) throw new NotFoundError("Order not found");
+  return toOrderDTO(row.order, row.buyerEmail, row.kurirEmail);
+}
+
+export async function listUserOrders(userId: string) {
+  const rows = await db
+    .select({
+      order: ordersTable,
+      buyerEmail: buyerUsers.email,
+      kurirEmail: kurirUsers.email,
+    })
+    .from(ordersTable)
+    .leftJoin(buyerUsers, eq(ordersTable.buyerId, buyerUsers.id))
+    .leftJoin(kurirUsers, eq(ordersTable.kurirId, kurirUsers.id))
+    .where(or(eq(ordersTable.buyerId, userId), eq(ordersTable.kurirId, userId)))
+    .orderBy(desc(ordersTable.createdAt));
+
+  return {
+    orders: rows.map((row) =>
+      toOrderDTO(row.order, row.buyerEmail, row.kurirEmail),
+    ),
+    total: rows.length,
+  };
+}
+
+export async function getOrderById(orderId: string, userId: string) {
+  const [row] = await db
+    .select()
+    .from(ordersTable)
+    .where(eq(ordersTable.id, orderId))
+    .limit(1);
+
+  const order = getOrderOrThrow(row);
+
+  if (order.buyerId !== userId && order.kurirId !== userId) {
+    throw new ForbiddenError("You are not a participant in this order");
+  }
+
+  return {
+    order: await getOrderDTOById(order.id),
   };
 }
 
@@ -85,11 +179,16 @@ export async function acceptOrder(orderId: string, kurirId: string) {
 
   return {
     message: "Order accepted successfully",
-    order: toOrderDTO(updated),
+    order: await getOrderDTOById(updated.id),
   };
 }
 
-export async function uploadPrice(orderId: string, userId: string, itemPrice: number) {
+export async function uploadPrice(
+  orderId: string,
+  userId: string,
+  itemPrice: number,
+  receiptImageUrl?: string,
+) {
   const [row] = await db
     .select()
     .from(ordersTable)
@@ -103,6 +202,7 @@ export async function uploadPrice(orderId: string, userId: string, itemPrice: nu
     .update(ordersTable)
     .set({
       itemPrice: itemPrice.toFixed(2),
+      receiptImageUrl: receiptImageUrl ?? order.receiptImageUrl ?? null,
       status: "PRICED",
       updatedAt: new Date(),
     })
@@ -111,7 +211,53 @@ export async function uploadPrice(orderId: string, userId: string, itemPrice: nu
 
   return {
     message: "Price updated successfully",
-    order: toOrderDTO(updated),
+    order: await getOrderDTOById(updated.id),
+  };
+}
+
+export async function cancelOrder(orderId: string, userId: string) {
+  const [row] = await db
+    .select()
+    .from(ordersTable)
+    .where(eq(ordersTable.id, orderId))
+    .limit(1);
+
+  const order = getOrderOrThrow(row);
+  validateTransition(order.status, "cancel", userId, order.buyerId, order.kurirId);
+  const isAssignedKurir = order.kurirId === userId;
+
+  if ((order.status === "ACCEPTED" || order.status === "PRICED") && isAssignedKurir) {
+    const [updated] = await db
+      .update(ordersTable)
+      .set({
+        kurirId: null,
+        itemPrice: null,
+        receiptImageUrl: null,
+        securityCode: null,
+        status: "PENDING",
+        updatedAt: new Date(),
+      })
+      .where(eq(ordersTable.id, orderId))
+      .returning();
+
+    return {
+      message: "Order returned to available pool",
+      order: await getOrderDTOById(updated.id),
+    };
+  }
+
+  const [updated] = await db
+    .update(ordersTable)
+    .set({
+      status: "CANCELLED",
+      updatedAt: new Date(),
+    })
+    .where(eq(ordersTable.id, orderId))
+    .returning();
+
+  return {
+    message: "Order cancelled successfully",
+    order: await getOrderDTOById(updated.id),
   };
 }
 
@@ -129,6 +275,7 @@ export async function payOrder(orderId: string, buyerId: string) {
 
     const order = getOrderOrThrow(row);
     validateTransition(order.status, "pay", buyerId, order.buyerId, order.kurirId);
+    const emails = await getParticipantEmails(order.buyerId, order.kurirId);
 
     const totalAmount = Number(order.itemPrice!) + Number(order.deliveryFee);
 
@@ -149,7 +296,7 @@ export async function payOrder(orderId: string, buyerId: string) {
     return {
       message: "Payment successful",
       security_code: securityCode,
-      order: toOrderDTO(updated),
+      order: toOrderDTO(updated, emails.buyerEmail, emails.kurirEmail),
     };
   });
 }
@@ -165,6 +312,7 @@ export async function completeOrder(orderId: string, kurirId: string, securityCo
 
     const order = getOrderOrThrow(row);
     validateTransition(order.status, "complete", kurirId, order.buyerId, order.kurirId);
+    const emails = await getParticipantEmails(order.buyerId, order.kurirId);
 
     if (order.securityCode !== securityCode) {
       throw new BadRequestError("Invalid security code");
@@ -185,7 +333,7 @@ export async function completeOrder(orderId: string, kurirId: string, securityCo
 
     return {
       message: "Order completed successfully",
-      order: toOrderDTO(updated),
+      order: toOrderDTO(updated, emails.buyerEmail, emails.kurirEmail),
     };
   });
 }

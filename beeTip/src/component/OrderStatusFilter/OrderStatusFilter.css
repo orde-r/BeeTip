@@ -1,0 +1,26 @@
+.order-status-filter {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.35rem;
+  width: 100%;
+  padding: 0.25rem;
+  border-radius: 0.75rem;
+  background: var(--white);
+  border: 0.0625rem solid var(--gray-200);
+}
+
+.order-status-filter-btn {
+  min-height: 2.35rem;
+  border: none;
+  border-radius: 0.55rem;
+  background: transparent;
+  color: var(--gray-500);
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.order-status-filter-btn-active {
+  background: var(--primary-100);
+  color: var(--primary-700);
+}

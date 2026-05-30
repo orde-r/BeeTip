@@ -1,0 +1,54 @@
+.profile {
+  padding: 1.5rem;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.profile-wallet {
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  background: var(--white);
+  border: 0.0625rem solid var(--gray-200);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.profile-wallet-label {
+  color: var(--gray-500);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.profile-wallet-balance {
+  color: var(--gray-900);
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.profile-history-btn {
+  width: 2.75rem;
+  height: 2.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 0.75rem;
+  background: var(--primary-100);
+  color: var(--primary-600);
+  flex-shrink: 0;
+}
+
+.profile-history-btn-active {
+  background: var(--primary-500);
+  color: var(--on-primary);
+}
+
+.profile-logout-btn {
+  width: 100%;
+  border-width: 0.0625rem !important;
+  border-color: var(--danger) !important;
+  color: var(--danger) !important;
+  font-size: 1rem !important;
+}

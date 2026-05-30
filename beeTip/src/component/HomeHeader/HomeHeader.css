@@ -1,0 +1,39 @@
+.home-header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 1.25rem;
+  background: var(--white);
+  border: 0.0625rem solid var(--gray-200);
+  border-radius: 0.75rem;
+}
+
+.home-eyebrow {
+  color: var(--gray-500);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.home-balance {
+  color: var(--gray-900);
+  font-size: 1.45rem;
+  font-weight: 700;
+}
+
+.home-header-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.home-refresh-btn {
+  width: 2.75rem;
+  height: 2.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 0.75rem;
+  background: var(--primary-100);
+  color: var(--primary-600);
+}

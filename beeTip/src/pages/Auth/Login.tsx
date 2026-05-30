@@ -14,12 +14,17 @@ export default function Login({ onSwitch }: LoginProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
+    setIsSubmitting(true);
 
-    if (login(email, password)) {
+    const didLogin = await login(email, password);
+    setIsSubmitting(false);
+
+    if (didLogin) {
       navigate(ROUTES.HOME);
       return;
     }
@@ -31,7 +36,7 @@ export default function Login({ onSwitch }: LoginProps) {
     <form className="auth-form" onSubmit={handleSubmit}>
       <div className="auth-form-header-container">
         <p className="auth-form-logo logo">BeeTip</p>
-        <p className="auth-form-desc">Lorem ipsum dolor sit amet.</p>
+        <p className="auth-form-desc">Order campus errands and pay securely.</p>
       </div>
 
       <label className="form-input-container">
@@ -51,15 +56,15 @@ export default function Login({ onSwitch }: LoginProps) {
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="••••••••"
+          placeholder="Password"
           required
         />
       </label>
 
       {error && <p className="auth-form-error">{error}</p>}
 
-      <button type="submit" className="primary-btn auth-form-btn">
-        Login
+      <button type="submit" className="primary-btn auth-form-btn" disabled={isSubmitting}>
+        {isSubmitting ? "Logging in..." : "Login"}
       </button>
 
       <div className="auth-form-switch">

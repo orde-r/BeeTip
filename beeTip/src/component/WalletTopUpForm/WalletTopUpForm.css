@@ -1,0 +1,35 @@
+.profile-topup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  background: var(--white);
+  border: 0.0625rem solid var(--gray-200);
+}
+
+.profile-section-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.profile-presets {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.profile-preset-btn {
+  min-height: 2.5rem;
+  padding: 0.45rem;
+  border: 0.0625rem solid var(--primary-300);
+  border-radius: 0.75rem;
+  background: var(--primary-100);
+  color: var(--primary-700);
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.profile-topup-btn {
+  width: 100%;
+}

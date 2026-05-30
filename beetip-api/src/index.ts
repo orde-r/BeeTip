@@ -2,23 +2,26 @@ import 'dotenv/config';
 import { serve } from '@hono/node-server'
 import { swaggerUI } from '@hono/swagger-ui'
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi'
+import { cors } from 'hono/cors'
 import { AppError } from './errors/app-error.js'
 import { authApp } from './routes/auth.routes.js'
 import { orderApp } from './routes/order.routes.js'
 import { transactionApp } from './routes/transaction.routes.js'
 import { initSocketServer } from './socket.js'
 import type { UserPayload } from './middlewares/auth.middleware.js'
+import { validationHook } from './validation.js'
 
 type AppVariables = { Variables: { user: UserPayload } };
 
 const app = new OpenAPIHono<AppVariables>({
-  defaultHook: (result, c) => {
-    if (!result.success) {
-      const firstError = result.error.issues[0];
-      return c.json({ message: firstError?.message ?? 'Validation error' }, 400);
-    }
-  },
+  defaultHook: validationHook,
 })
+
+app.use('*', cors({
+  origin: process.env.CORS_ORIGIN ?? '*',
+  allowHeaders: ['Content-Type', 'Authorization'],
+  allowMethods: ['GET', 'POST', 'OPTIONS'],
+}))
 
 app.onError((err, c) => {
   if (err instanceof AppError) {

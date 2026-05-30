@@ -12,16 +12,20 @@
 
 .userorder-card:hover {
   transform: translateY(-0.25rem);
-  box-shadow: 0 0.625rem 1.25rem #89510026;
+  box-shadow: var(--card-hover-shadow);
   border-color: var(--primary-300);
 }
 
-.userorder-card-header {
+.userorder-card-summary {
   width: 100%;
   display: flex;
   gap: 1rem;
   justify-content: space-between;
   align-items: center;
+  border: none;
+  background: transparent;
+  color: inherit;
+  text-align: left;
 }
 
 .userorder-date {
@@ -49,9 +53,23 @@
   color: var(--primary-500);
 }
 
+.userorder-expand-icon {
+  color: var(--gray-500);
+  transition: transform 0.2s ease;
+}
+
+.userorder-expand-icon-open {
+  transform: rotate(180deg);
+}
+
+.userorder-status--paid {
+  background-color: var(--info-bg);
+  color: var(--info-text);
+}
+
 .userorder-status--delivered {
-  background-color: #47dd715a;
-  color: #1f8a3f;
+  background-color: var(--completed-bg);
+  color: var(--completed-text);
 }
 
 .userorder-divider {
@@ -93,25 +111,21 @@
   background-color: var(--primary-500);
 }
 
+.userorder-courier-icon-container--paid {
+  background-color: var(--info-text);
+}
+
 .userorder-courier-icon-container--delivered {
   background-color: var(--success);
 }
 
-.userorder-courier-icon {
-  display: inline-block;
-  width: 1.25rem;
-  height: 1.25rem;
-  background-color: var(--white);
-  mask-repeat: no-repeat;
-  mask-position: center;
-  mask-size: contain;
-  -webkit-mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-  -webkit-mask-size: contain;
+.userorder-material-icon {
+  color: var(--on-primary);
+  font-size: 1.35rem;
 }
 
-.userorder-courier-icon-container--waiting .userorder-courier-icon {
-  background-color: var(--gray-600);
+.userorder-courier-icon-container--waiting .userorder-material-icon {
+  color: var(--gray-600);
 }
 
 .userorder-courier-text {
@@ -138,4 +152,17 @@
   font-size: 0.8rem !important;
   font-weight: 600 !important;
   border-radius: 0.5rem !important;
+  flex-shrink: 0;
+}
+
+.userorder-detail {
+  color: var(--gray-600);
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.userorder-total {
+  color: var(--gray-900);
+  font-size: 0.9rem;
+  font-weight: 700;
 }

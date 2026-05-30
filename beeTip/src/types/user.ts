@@ -1,8 +1,7 @@
 export interface User {
   id: string;
-  name: string;
   email: string;
-  password: string;
-  walletBalance: number;
-  createdAt: string;
+  balance: number;
+  current_role: string;
+  createdAt?: string;
 }

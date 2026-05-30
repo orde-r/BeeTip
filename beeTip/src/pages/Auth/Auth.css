@@ -1,6 +1,7 @@
 .auth {
   background: linear-gradient(90deg, var(--primary-300), var(--primary-600));
   flex-direction: column-reverse;
+  height: 100%;
 }
 
 .auth-form-panel {
@@ -79,7 +80,7 @@
 
 .auth-form-error {
   color: var(--danger);
-  background: #ffedeb;
+  background: var(--danger-bg);
   padding: 0.75rem 1rem;
   border-radius: 1rem;
 }

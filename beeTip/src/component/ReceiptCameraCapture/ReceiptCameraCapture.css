@@ -1,0 +1,48 @@
+.receipt-camera {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  background: var(--gray-100);
+  border: 0.0625rem solid var(--gray-200);
+}
+
+.receipt-camera-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.receipt-camera-header p {
+  color: var(--gray-900);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.receipt-camera-header button {
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 0.5rem;
+  background: var(--white);
+  color: var(--gray-600);
+}
+
+.receipt-camera-preview {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border-radius: 0.65rem;
+  background: var(--black);
+}
+
+.receipt-camera-capture-btn {
+  width: 100%;
+  font-size: 0.95rem !important;
+  border-radius: 0.75rem !important;
+}

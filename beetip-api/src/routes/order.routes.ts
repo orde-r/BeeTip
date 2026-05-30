@@ -9,25 +9,68 @@ import {
   PayOrderResponseSchema,
   CompleteOrderBodySchema,
   CompleteOrderResponseSchema,
+  CancelOrderResponseSchema,
+  OrderDTOSchema,
 } from "../dtos/order.dto.js";
 import { ListMessagesResponseSchema } from "../dtos/message.dto.js";
-import { ErrorResponseSchema } from "../dtos/auth.dto.js";
+import { ErrorResponseSchema } from "../dtos/error.dto.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 import { UnauthorizedError } from "../errors/unauthorized.error.js";
 import { getOrderMessages } from "../services/chat.service.js";
 import {
   createOrder,
   listAvailableOrders,
+  listUserOrders,
+  getOrderById,
   acceptOrder,
   uploadPrice,
   payOrder,
   completeOrder,
+  cancelOrder,
 } from "../services/order.service.js";
+import { emitOrderStatusChanged } from "../socket.js";
 
 
-export const orderApp = new OpenAPIHono();
+import { validationHook } from "../validation.js";
 
+export const orderApp = new OpenAPIHono({ defaultHook: validationHook });
+
+orderApp.use("/orders", authMiddleware);
 orderApp.use("/orders/*", authMiddleware);
+
+const listMyOrdersRoute = createRoute({
+  method: "get",
+  path: "/orders/my",
+  tags: ["Orders"],
+  summary: "List orders for the authenticated user",
+  security: [{ Bearer: [] }],
+  responses: {
+    200: {
+      description: "List of the user's orders",
+      content: {
+        "application/json": {
+          schema: ListOrdersResponseSchema,
+        },
+      },
+    },
+    401: {
+      description: "Missing or invalid authentication",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+        },
+      },
+    },
+  },
+});
+
+orderApp.openapi(listMyOrdersRoute, async (c) => {
+  const user = c.get("user" as never);
+  if (!user) throw new UnauthorizedError();
+
+  const result = await listUserOrders((user as any).id);
+  return c.json(result, 200);
+});
 
 const createOrderRoute = createRoute({
   method: "post",
@@ -116,6 +159,50 @@ orderApp.openapi(listAvailableOrdersRoute, async (c) => {
   return c.json(result, 200);
 });
 
+const getOrderRoute = createRoute({
+  method: "get",
+  path: "/orders/{id}",
+  tags: ["Orders"],
+  summary: "Get an order by id",
+  security: [{ Bearer: [] }],
+  request: {
+    params: z.object({
+      id: z.string().uuid().openapi({ example: "550e8400-e29b-41d4-a716-446655440000" }),
+    }),
+  },
+  responses: {
+    200: {
+      description: "Order detail",
+      content: {
+        "application/json": {
+          schema: z.object({ order: OrderDTOSchema }).openapi("OrderDetailResponse"),
+        },
+      },
+    },
+    401: {
+      description: "Missing or invalid authentication",
+      content: { "application/json": { schema: ErrorResponseSchema } },
+    },
+    403: {
+      description: "Not a participant in this order",
+      content: { "application/json": { schema: ErrorResponseSchema } },
+    },
+    404: {
+      description: "Order not found",
+      content: { "application/json": { schema: ErrorResponseSchema } },
+    },
+  },
+});
+
+orderApp.openapi(getOrderRoute, async (c) => {
+  const user = c.get("user" as never);
+  if (!user) throw new UnauthorizedError();
+
+  const { id } = c.req.valid("param");
+  const result = await getOrderById(id, (user as any).id);
+  return c.json(result, 200);
+});
+
 const acceptOrderRoute = createRoute({
   method: "post",
   path: "/orders/{id}/accept",
@@ -177,6 +264,7 @@ orderApp.openapi(acceptOrderRoute, async (c) => {
 
   const { id } = c.req.valid("param");
   const result = await acceptOrder(id, (user as any).id);
+  emitOrderStatusChanged(result.order);
   return c.json(result, 200);
 });
 
@@ -232,8 +320,9 @@ orderApp.openapi(uploadPriceRoute, async (c) => {
   if (!user) throw new UnauthorizedError();
 
   const { id } = c.req.valid("param");
-  const { item_price } = c.req.valid("json");
-  const result = await uploadPrice(id, (user as any).id, item_price);
+  const { item_price, receipt_image_url } = c.req.valid("json");
+  const result = await uploadPrice(id, (user as any).id, item_price, receipt_image_url);
+  emitOrderStatusChanged(result.order);
   return c.json(result, 200);
 });
 
@@ -282,6 +371,7 @@ orderApp.openapi(payOrderRoute, async (c) => {
 
   const { id } = c.req.valid("param");
   const result = await payOrder(id, (user as any).id);
+  emitOrderStatusChanged(result.order);
   return c.json(result, 200);
 });
 
@@ -339,6 +429,56 @@ orderApp.openapi(completeOrderRoute, async (c) => {
   const { id } = c.req.valid("param");
   const { security_code } = c.req.valid("json");
   const result = await completeOrder(id, (user as any).id, security_code);
+  emitOrderStatusChanged(result.order);
+  return c.json(result, 200);
+});
+
+const cancelOrderRoute = createRoute({
+  method: "post",
+  path: "/orders/{id}/cancel",
+  tags: ["Orders"],
+  summary: "Cancel an order before payment",
+  security: [{ Bearer: [] }],
+  request: {
+    params: z.object({
+      id: z.string().uuid().openapi({ example: "550e8400-e29b-41d4-a716-446655440000" }),
+    }),
+  },
+  responses: {
+    200: {
+      description: "Order cancelled successfully",
+      content: {
+        "application/json": {
+          schema: CancelOrderResponseSchema,
+        },
+      },
+    },
+    400: {
+      description: "Order cannot be cancelled in its current state",
+      content: { "application/json": { schema: ErrorResponseSchema } },
+    },
+    401: {
+      description: "Missing or invalid authentication",
+      content: { "application/json": { schema: ErrorResponseSchema } },
+    },
+    403: {
+      description: "User cannot cancel this order",
+      content: { "application/json": { schema: ErrorResponseSchema } },
+    },
+    404: {
+      description: "Order not found",
+      content: { "application/json": { schema: ErrorResponseSchema } },
+    },
+  },
+});
+
+orderApp.openapi(cancelOrderRoute, async (c) => {
+  const user = c.get("user" as never);
+  if (!user) throw new UnauthorizedError();
+
+  const { id } = c.req.valid("param");
+  const result = await cancelOrder(id, (user as any).id);
+  emitOrderStatusChanged(result.order);
   return c.json(result, 200);
 });
 

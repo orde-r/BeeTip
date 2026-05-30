@@ -79,3 +79,19 @@ export async function loginUser(email: string, password: string) {
     user: toUserDTO(user),
   };
 }
+
+export async function getUserById(userId: string) {
+  const [user] = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.id, userId))
+    .limit(1);
+
+  if (!user) {
+    throw new UnauthorizedError("Invalid user session");
+  }
+
+  return {
+    user: toUserDTO(user),
+  };
+}

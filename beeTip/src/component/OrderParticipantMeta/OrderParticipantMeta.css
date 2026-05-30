@@ -1,0 +1,25 @@
+.order-participant-meta.order-participant-meta {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 0.35rem;
+  padding: 0;
+  color: var(--gray-500);
+  font-size: 0.75rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+
+.order-participant-meta .order-participant-meta-label {
+  color: var(--gray-500);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.order-participant-meta .order-participant-meta-value {
+  min-width: 0;
+  color: var(--gray-600);
+  font-weight: 500;
+  text-align: left;
+}

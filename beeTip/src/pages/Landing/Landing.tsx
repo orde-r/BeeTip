@@ -7,11 +7,12 @@ export default function Landing() {
     <section className="landing">
       <p className="landing-logo logo">BeeTip</p>
       <p className="landing-desc">
-        Lorem ipsum, dolor sit amet consectetur adipisicing elit. Alias error
-        quo iusto facere vero blanditiis voluptas quos aut distinctio esse!
+        Campus proxy buying for BINUS students. Request an errand, chat with a
+        kurir, pay through wallet balance, and complete delivery with a security
+        code.
       </p>
       <Link to={ROUTES.AUTH}>
-        <button className="primary-btn">Login</button>
+        <button className="primary-btn">Get Started</button>
       </Link>
     </section>
   );

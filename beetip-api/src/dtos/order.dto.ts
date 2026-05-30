@@ -11,11 +11,14 @@ export const OrderDTOSchema = z
   .object({
     id: z.string().uuid().openapi({ example: "550e8400-e29b-41d4-a716-446655440000" }),
     buyer_id: z.string().uuid().openapi({ example: "550e8400-e29b-41d4-a716-446655440001" }),
+    buyer_email: z.string().email().nullable().openapi({ example: "buyer@binus.ac.id" }),
     kurir_id: z.string().uuid().nullable().openapi({ example: null }),
+    kurir_email: z.string().email().nullable().openapi({ example: null }),
     to_location: z.string().openapi({ example: "13th floor room 2" }),
     item_desc: z.string().openapi({ example: "Chicken rice from canteen" }),
     item_price: z.number().max(9999999999.99).nullable().openapi({ example: null }),
     delivery_fee: z.number().max(9999999999.99).openapi({ example: 5000.0 }),
+    receipt_image_url: z.string().nullable().openapi({ example: null }),
     status: z.string().openapi({ example: "PENDING" }),
     createdAt: z.string().datetime().openapi({ example: "2026-05-25T10:05:00.000Z" }),
   })
@@ -47,6 +50,7 @@ export const AcceptOrderResponseSchema = z
 export const UploadPriceBodySchema = z
   .object({
     item_price: z.number().positive("Price must be positive").max(9999999999.99).openapi({ example: 25000.0 }),
+    receipt_image_url: z.string().optional().openapi({ example: "data:image/jpeg;base64,..." }),
   })
   .openapi("UploadPriceBody");
 
@@ -77,3 +81,10 @@ export const CompleteOrderResponseSchema = z
     order: OrderDTOSchema,
   })
   .openapi("CompleteOrderResponse");
+
+export const CancelOrderResponseSchema = z
+  .object({
+    message: z.string().openapi({ example: "Order cancelled successfully" }),
+    order: OrderDTOSchema,
+  })
+  .openapi("CancelOrderResponse");

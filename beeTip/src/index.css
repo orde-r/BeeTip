@@ -42,6 +42,8 @@
 }
 
 :root {
+  color-scheme: light;
+
   --primary-100: hsl(50, 100%, 92%);
   --primary-200: hsl(47, 93%, 79%);
   --primary-300: hsl(43, 79%, 65%);
@@ -66,10 +68,73 @@
   --black: #000000;
 
   --general-shadow: 0 0 0.5rem #63636326;
+  --card-hover-shadow: 0 0.625rem 1.25rem #89510026;
+  --on-primary: #ffffff;
 
   --danger: #ff614d;
+  --danger-bg: #ffedeb;
   --warning: #efdb46;
   --success: #56e77f;
+  --success-text: #1f8a3f;
+  --success-bg: #e8fbef;
+  --info-text: #0c6f98;
+  --info-bg: #d9f3ff;
+  --completed-text: #1f8a3f;
+  --completed-bg: #47dd715a;
+  --chat-bubble-bg: var(--white);
+  --chat-bubble-border: var(--gray-200);
+  --chat-bubble-own-bg: var(--primary-500);
+  --chat-bubble-own-text: var(--on-primary);
+  --chat-bubble-own-meta: var(--primary-100);
+  --chat-compose-bg: var(--white);
+  --chat-compose-border: var(--gray-200);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --primary-100: #3a260e;
+  --primary-200: #533712;
+  --primary-300: #8a5a1d;
+  --primary-400: #c98427;
+  --primary-500: #f0a536;
+  --primary-600: #f5b34e;
+  --primary-700: #ffc669;
+  --primary-800: #ffdc92;
+  --primary-900: #ffe8b8;
+
+  --white: #191c20;
+  --gray-50: #0f1114;
+  --gray-100: #111418;
+  --gray-200: #272c33;
+  --gray-300: #3a424c;
+  --gray-400: #717b87;
+  --gray-500: #9ba5b0;
+  --gray-600: #c0c7cf;
+  --gray-700: #d6dbe1;
+  --gray-800: #e9edf1;
+  --gray-900: #f7f8f9;
+
+  --general-shadow: 0 0 0.75rem #00000066;
+  --card-hover-shadow: 0 0.625rem 1.25rem #00000059;
+
+  --danger: #ff897b;
+  --danger-bg: #3a1d1a;
+  --warning: #f1d96b;
+  --success: #64e089;
+  --success-text: #7ef0a2;
+  --success-bg: #173522;
+  --info-text: #78d8ff;
+  --info-bg: #143040;
+  --completed-text: #7ef0a2;
+  --completed-bg: #173522;
+  --chat-bubble-bg: #202832;
+  --chat-bubble-border: #303a46;
+  --chat-bubble-own-bg: #4c3517;
+  --chat-bubble-own-text: #ffe8b8;
+  --chat-bubble-own-meta: #d8b875;
+  --chat-compose-bg: #202832;
+  --chat-compose-border: #303a46;
 }
 
 * {
@@ -89,6 +154,9 @@ body {
   justify-content: center;
   align-items: center;
   background-color: var(--gray-100);
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 #root {
@@ -116,6 +184,13 @@ button {
   color: inherit;
   cursor: pointer;
   font-size: inherit;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  filter: grayscale(0.1);
+  opacity: 0.65;
+  transform: none !important;
 }
 
 section {
@@ -151,7 +226,7 @@ section {
   font-size: 1.15rem;
   border-radius: 1rem;
   transition: all 0.3s ease;
-  color: white;
+  color: var(--on-primary);
   border: 0.01rem solid transparent;
 }
 
@@ -181,6 +256,75 @@ section {
   box-shadow: 0 0.25rem 0.5rem var(--primary-100);
 }
 
+.form-input-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 0.25rem;
+  color: var(--gray-700);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.form-input-container input,
+.form-input-container textarea {
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 0.75rem 0.9rem;
+  border: 0.01rem solid var(--gray-300);
+  border-radius: 0.75rem;
+  background: var(--white);
+  color: var(--gray-900);
+  transition: all 0.3s ease;
+}
+
+.form-input-container input::placeholder,
+.form-input-container textarea::placeholder {
+  color: var(--gray-400);
+}
+
+.form-input-container input:focus,
+.form-input-container textarea:focus {
+  outline: none;
+  border-color: var(--primary-500);
+}
+
 .navbar-section {
   margin-bottom: 5rem;
+}
+
+.app-loading {
+  align-items: center;
+  justify-content: center;
+}
+
+.app-loading .logo {
+  font-size: 2.5rem;
+}
+
+.page-error,
+.page-success,
+.empty-state {
+  width: 100%;
+  border-radius: 0.75rem;
+  padding: 0.85rem 1rem;
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.page-error {
+  color: var(--danger);
+  background: var(--danger-bg);
+}
+
+.page-success {
+  color: var(--success-text);
+  background: var(--success-bg);
+}
+
+.empty-state {
+  color: var(--gray-500);
+  background: var(--white);
+  border: 0.0625rem solid var(--gray-200);
+  text-align: center;
 }

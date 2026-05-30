@@ -47,12 +47,12 @@ export const AuthLoginResponseSchema = z
   })
   .openapi("AuthLoginResponse");
 
-
-export const ErrorResponseSchema = z
+export const AuthMeResponseSchema = z
   .object({
-    message: z.string().openapi({ example: "Something went wrong" }),
+    user: UserDTOSchema,
   })
-  .openapi("ErrorResponse");
+  .openapi("AuthMeResponse");
+
 
 export const MessageResponseSchema = z
   .object({

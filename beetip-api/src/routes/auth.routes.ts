@@ -5,12 +5,17 @@ import {
   AuthRegisterResponseSchema,
   AuthLoginBodySchema,
   AuthLoginResponseSchema,
-  ErrorResponseSchema,
+  AuthMeResponseSchema,
   MessageResponseSchema,
 } from "../dtos/auth.dto.js";
-import { registerUser, loginUser } from "../services/auth.service.js";
+import { ErrorResponseSchema } from "../dtos/error.dto.js";
+import { authMiddleware } from "../middlewares/auth.middleware.js";
+import { UnauthorizedError } from "../errors/unauthorized.error.js";
+import { registerUser, loginUser, getUserById } from "../services/auth.service.js";
 
-export const authApp = new OpenAPIHono();
+import { validationHook } from "../validation.js";
+
+export const authApp = new OpenAPIHono({ defaultHook: validationHook });
 
 const registerRoute = createRoute({
   method: "post",
@@ -117,6 +122,42 @@ authApp.openapi(loginRoute, async (c) => {
     maxAge: 60 * 60 * 24 * 7,
   });
 
+  return c.json(result, 200);
+});
+
+authApp.use("/auth/me", authMiddleware);
+
+const meRoute = createRoute({
+  method: "get",
+  path: "/auth/me",
+  tags: ["Auth"],
+  summary: "Get the authenticated user",
+  security: [{ Bearer: [] }],
+  responses: {
+    200: {
+      description: "Authenticated user",
+      content: {
+        "application/json": {
+          schema: AuthMeResponseSchema,
+        },
+      },
+    },
+    401: {
+      description: "Missing or invalid authentication",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+        },
+      },
+    },
+  },
+});
+
+authApp.openapi(meRoute, async (c) => {
+  const user = c.get("user" as never);
+  if (!user) throw new UnauthorizedError();
+
+  const result = await getUserById((user as any).id);
   return c.json(result, 200);
 });
 

@@ -1,0 +1,86 @@
+.chat-action-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  background: var(--white);
+  border: 0.0625rem solid var(--gray-200);
+}
+
+.chat-action-title {
+  color: var(--gray-900);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.chat-action-copy {
+  color: var(--gray-600);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.chat-action-btn {
+  width: 100%;
+  font-size: 0.95rem !important;
+  border-radius: 0.75rem !important;
+}
+
+.chat-danger-btn {
+  border-color: var(--danger) !important;
+  color: var(--danger) !important;
+}
+
+.chat-code-panel {
+  border-color: var(--primary-300);
+  background: var(--primary-100);
+}
+
+.chat-security-code {
+  color: var(--primary-800);
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.receipt-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.receipt-picker-label {
+  color: var(--gray-700);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.receipt-picker-actions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+.receipt-picker-btn {
+  gap: 0.35rem;
+  padding: 0.65rem !important;
+  border-width: 0.0625rem !important;
+  border-radius: 0.75rem !important;
+  font-size: 0.85rem !important;
+}
+
+.receipt-picker-btn input {
+  display: none;
+}
+
+button.receipt-picker-btn {
+  width: 100%;
+}
+
+.receipt-preview {
+  width: 100%;
+  max-height: 12rem;
+  object-fit: cover;
+  border-radius: 0.75rem;
+  border: 0.0625rem solid var(--gray-200);
+}

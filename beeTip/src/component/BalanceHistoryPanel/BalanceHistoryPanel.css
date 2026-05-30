@@ -1,0 +1,66 @@
+.balance-history-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  border: 0.0625rem solid var(--gray-200);
+  background: var(--white);
+}
+
+.balance-history-header,
+.balance-history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.balance-history-header p {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.balance-history-header button {
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 0.5rem;
+  background: var(--gray-100);
+  color: var(--gray-600);
+}
+
+.balance-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.balance-history-item {
+  padding: 0.75rem 0;
+  border-bottom: 0.0625rem solid var(--gray-200);
+}
+
+.balance-history-item:last-child {
+  border-bottom: none;
+}
+
+.balance-history-item p {
+  color: var(--gray-900);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.balance-history-item span {
+  color: var(--gray-500);
+  font-size: 0.75rem;
+}
+
+.balance-history-item strong {
+  color: var(--gray-900);
+  font-size: 0.9rem;
+  white-space: nowrap;
+}

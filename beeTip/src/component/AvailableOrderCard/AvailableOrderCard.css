@@ -1,0 +1,36 @@
+.available-order-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  border: 0.0625rem solid var(--gray-200);
+  background: var(--white);
+}
+
+.available-order-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  color: var(--gray-500);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.available-order-location {
+  color: var(--gray-900);
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.available-order-detail {
+  color: var(--gray-600);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.available-order-btn {
+  width: 100%;
+  font-size: 0.95rem !important;
+  border-radius: 0.75rem !important;
+}

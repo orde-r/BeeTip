@@ -1,36 +1,38 @@
-These design patterns should be implemented:
+These design patterns are used in the backend, following:
 
 ## Behavioral Patterns
 
 ### 1. State Pattern
 **Reference:** https://refactoring.guru/design-patterns/state
 
-**Where:** Order Lifecycle (`PENDING` → `ACCEPTED` → `PRICED` → `PAID` → `COMPLETED` / `CANCELLED`)
+**Where:** Order Lifecycle (`PENDING` -> `ACCEPTED` -> `PRICED` -> `PAID` -> `COMPLETED` / `CANCELLED`)
+
+**Code:** `beetip-api/src/services/order-states.ts`
 
 The Order entity behaves differently depending on its current status. Each state determines:
 - Which actions are allowed (e.g., only `PENDING` orders can be accepted, only `PRICED` orders can be paid).
 - Who is authorized to perform those actions (Buyer vs Kurir).
-- What side effects occur on transition (e.g., balance deduction on `PAID`, security code generation).
+- What next status should be returned for the transition.
 
-Instead of scattering `if (order.status === 'PENDING')` checks across handlers, each state encapsulates its own transition logic and guards.
+Instead of scattering `if (order.status === "PENDING")` checks across handlers, the transition map and `validateTransition()` function centralize the order state rules.
 
 ```typescript
-// Example: State-driven transition map
+// State-driven transition map
 const orderTransitions = {
   PENDING: {
-    accept: { nextState: 'ACCEPTED', allowedRole: 'KURIR' },
-    cancel: { nextState: 'CANCELLED', allowedRole: 'BUYER' },
+    accept: { nextState: "ACCEPTED", allowedRole: "KURIR" },
+    cancel: { nextState: "CANCELLED", allowedRole: "BUYER" },
   },
   ACCEPTED: {
-    price:  { nextState: 'PRICED', allowedRole: 'KURIR' },
-    cancel: { nextState: 'CANCELLED', allowedRole: 'BOTH' },
+    price: { nextState: "PRICED", allowedRole: "KURIR" },
+    cancel: { nextState: "CANCELLED", allowedRole: "BOTH" },
   },
   PRICED: {
-    pay:    { nextState: 'PAID', allowedRole: 'BUYER' },
-    cancel: { nextState: 'CANCELLED', allowedRole: 'BOTH' },
+    pay: { nextState: "PAID", allowedRole: "BUYER" },
+    cancel: { nextState: "CANCELLED", allowedRole: "BOTH" },
   },
   PAID: {
-    complete: { nextState: 'COMPLETED', allowedRole: 'KURIR' },
+    complete: { nextState: "COMPLETED", allowedRole: "KURIR" },
   },
 } as const;
 ```
@@ -42,29 +44,21 @@ const orderTransitions = {
 
 **Where:** Chat System (Socket.io) and Order Status Notifications
 
-Socket.io is inherently an Observer (Pub/Sub) implementation. When a participant sends a message, all subscribers in the room receive the event without the sender needing to know who is listening.
+**Code:** `beetip-api/src/socket.ts`
+
+Socket.io rooms work as an Observer/Pub-Sub implementation. When a participant sends a message or an order status changes, all connected clients subscribed to the order room receive the event without the service needing to know each socket directly.
 
 - **Subject:** The Socket.io room (`room_order_<id>`).
 - **Observers:** The Buyer's and Kurir's connected sockets.
-- **Event:** `receive_message` broadcast when a new message is persisted.
-
-This also applies to order status changes — when a Kurir accepts an order or uploads a price, the Buyer's client can be notified in real-time via a Socket.io event.
+- **Events:** `receive_message` and `order_status_changed`.
 
 ```typescript
-// Example: Broadcasting a message to all observers in the room
-io.to(`room_order_${orderId}`).emit('receive_message', {
-  id: message.id,
-  order_id: orderId,
-  sender_id: senderId,
-  content: content,
-  timestamp: new Date().toISOString(),
-});
+// Broadcasting a message to all observers in the room
+chatNamespace.to(roomName).emit("receive_message", message);
 
-// Example: Notifying observers of an order status change
-io.to(`room_order_${orderId}`).emit('order_status_changed', {
-  order_id: orderId,
-  new_status: 'PRICED',
-  item_price: 25000,
+// Notifying observers of an order status change
+chatNamespaceRef?.to(`room_order_${order.id}`).emit("order_status_changed", {
+  order,
 });
 ```
 
@@ -75,29 +69,33 @@ io.to(`room_order_${orderId}`).emit('order_status_changed', {
 
 **Where:** Hono Middleware Pipeline (Auth, Error Handling, Validation)
 
-Each incoming HTTP request passes through a chain of middleware handlers. Each handler in the chain either:
-- Processes the request and passes it to the **next** handler, or
-- Short-circuits the chain by returning a response (e.g., 401 Unauthorized).
+**Code:** `beetip-api/src/middlewares/auth.middleware.ts`, `beetip-api/src/index.ts`
 
-The request flows through: **Auth Middleware → Route Handler → `app.onError()` (if thrown)**.
+Each incoming HTTP request passes through middleware handlers. A handler can process the request and pass it to the next handler, or stop the chain by throwing an error such as `UnauthorizedError`.
+
+The request flow is: **Auth Middleware -> Route Handler -> `app.onError()` if an error is thrown**.
 
 ```typescript
-// Example: Auth middleware as a link in the chain
-const authMiddleware = createMiddleware<AppEnv>(async (c, next) => {
-  const token = c.req.header('Authorization')?.replace('Bearer ', '');
-  
-  if (!token) {
-    throw new UnauthorizedError('Missing token');  // short-circuits the chain
+// Auth middleware as a link in the chain
+export const authMiddleware: MiddlewareHandler = async (c, next) => {
+  const authHeader = c.req.header("Authorization");
+  let token: string | undefined;
+
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    token = authHeader.slice(7);
   }
 
-  const payload = verifyJwt(token);
-  c.set('user', payload);  // attach data for downstream handlers
-  await next();             // pass to the next handler in the chain
-});
+  if (!token) {
+    // Short-circuits the chain and forwards control to app.onError()
+    throw new UnauthorizedError("Missing or invalid Authorization header");
+  }
 
-// Applying the chain to protected routes
-app.use('/orders/*', authMiddleware);
-app.use('/transactions/*', authMiddleware);
+  const payload = jwt.verify(token, JWT_SECRET) as UserPayload;
+  // Attach data for downstream handlers
+  c.set("user", payload);
+  // Pass to the next handler in the chain
+  await next();
+};
 ```
 
 ---
@@ -107,40 +105,40 @@ app.use('/transactions/*', authMiddleware);
 
 **Where:** Transaction Processing (Deposit, Payment, Earning)
 
-The system processes multiple types of financial transactions (`DEPOSIT`, `PAYMENT`, `EARNING`), each with different business logic (who gets debited/credited, validation rules). Instead of a monolithic function with branching logic, each transaction type can be handled by a dedicated strategy.
+**Code:** `beetip-api/src/services/transaction-strategies.ts`
+
+The system processes multiple transaction types (`DEPOSIT`, `PAYMENT`, `EARNING`), and each type has different business logic. Instead of one large branching function, each transaction type is handled by a dedicated strategy function.
 
 ```typescript
-// Example: Transaction strategies
-type TransactionStrategy = (
-  db: DrizzleDB,
-  userId: string,
-  amount: number,
-  orderId?: string
-) => Promise<TransactionResult>;
-
-const transactionStrategies: Record<string, TransactionStrategy> = {
-  DEPOSIT: async (db, userId, amount) => {
+// Transaction strategies selected by transaction type
+export const transactionStrategies: Record<string, TransactionStrategy> = {
+  DEPOSIT: async (tx, userId, amount) => {
     // Increase user balance, no order involved
-    return await db.transaction(async (tx) => {
-      await increaseBalance(tx, userId, amount);
-      return await createTransactionRecord(tx, userId, 'DEPOSIT', amount);
-    });
+    await increaseBalance(tx, userId, amount);
+    return await createTransactionRecord(tx, userId, "DEPOSIT", amount);
   },
-  PAYMENT: async (db, userId, amount, orderId) => {
-    // Decrease buyer balance, validate sufficient funds
-    return await db.transaction(async (tx) => {
-      const user = await getUserForUpdate(tx, userId);
-      if (user.balance < amount) throw new BadRequestError('Insufficient balance');
-      await decreaseBalance(tx, userId, amount);
-      return await createTransactionRecord(tx, userId, 'PAYMENT', amount, orderId);
-    });
+
+  PAYMENT: async (tx, userId, amount, orderId) => {
+    // Decrease buyer balance after validating sufficient funds
+    const [user] = await tx
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.id, userId))
+      .for("update")
+      .limit(1);
+
+    if (!user || Number(user.balance) < amount) {
+      throw new BadRequestError("Insufficient balance");
+    }
+
+    await decreaseBalance(tx, userId, amount);
+    return await createTransactionRecord(tx, userId, "PAYMENT", amount, orderId);
   },
-  EARNING: async (db, userId, amount, orderId) => {
-    // Increase kurir balance upon order completion
-    return await db.transaction(async (tx) => {
-      await increaseBalance(tx, userId, amount);
-      return await createTransactionRecord(tx, userId, 'EARNING', amount, orderId);
-    });
+
+  EARNING: async (tx, userId, amount, orderId) => {
+    // Increase kurir balance after order completion
+    await increaseBalance(tx, userId, amount);
+    return await createTransactionRecord(tx, userId, "EARNING", amount, orderId);
   },
 };
 ```
@@ -154,41 +152,41 @@ const transactionStrategies: Record<string, TransactionStrategy> = {
 
 **Where:** Custom Error Creation (`AppError` hierarchy)
 
-The global error handling system relies on a family of error objects that all share the same interface (`AppError`) but differ in their HTTP status codes and default messages. A factory function can centralize error creation, or each subclass acts as its own factory.
+**Code:** `beetip-api/src/errors/app-error.ts`, `beetip-api/src/errors/*.error.ts`
+
+The global error handling system relies on a family of error objects that all share the same interface (`AppError`) but differ in their HTTP status codes and default messages.
+
+This is a Factory Method pattern in the current codebase: each concrete error class creates a specific error type, and `app.onError()` handles all of them uniformly through the `AppError` abstraction.
 
 ```typescript
-// Example: AppError base and concrete error factories
-abstract class AppError extends Error {
-  abstract readonly statusCode: number;
+// AppError base and concrete HTTP error class
+export abstract class AppError extends Error {
+  public abstract readonly statusCode: number;
+
+  constructor(message: string) {
+    super(message);
+    this.name = this.constructor.name;
+  }
 }
 
-class BadRequestError extends AppError {
-  readonly statusCode = 400;
-  constructor(message = 'Bad Request') { super(message); }
-}
+export class BadRequestError extends AppError {
+  public readonly statusCode = 400;
 
-class UnauthorizedError extends AppError {
-  readonly statusCode = 401;
-  constructor(message = 'Unauthorized') { super(message); }
+  constructor(message = "Bad Request") {
+    super(message);
+  }
 }
+```
 
-class NotFoundError extends AppError {
-  readonly statusCode = 404;
-  constructor(message = 'Not Found') { super(message); }
-}
-
-class ForbiddenError extends AppError {
-  readonly statusCode = 403;
-  constructor(message = 'Forbidden') { super(message); }
-}
-
-// Usage in app.onError — polymorphic handling
+```typescript
+// Polymorphic error handling in app.onError()
 app.onError((err, c) => {
   if (err instanceof AppError) {
-    return c.json({ error: err.message }, err.statusCode);
+    return c.json({ message: err.message }, err.statusCode as any);
   }
-  console.error(err);
-  return c.json({ error: 'Internal Server Error' }, 500);
+
+  console.error("Unhandled error:", err);
+  return c.json({ message: "Internal Server Error" }, 500);
 });
 ```
 
@@ -199,40 +197,54 @@ app.onError((err, c) => {
 ### 6. Facade Pattern
 **Reference:** https://refactoring.guru/design-patterns/facade
 
-**Where:** Service Layer (Order Payment Flow)
+**Where:** Service Layer (Order Payment and Completion Flow)
 
-The `payOrder` service function acts as a Facade over a complex subsystem involving multiple operations: balance validation, balance deduction, transaction record creation, security code generation, and order status update. The route handler only calls a single service function, hiding the complexity behind a clean interface.
+**Code:** `beetip-api/src/services/order.service.ts`
+
+The `payOrder()` and `completeOrder()` service functions act as facades over a complex subsystem involving order locking, state validation, balance updates, transaction records, security code validation/generation, and order status updates.
+
+The route handler only calls a single service function, while the service hides the internal sequence behind a clean interface.
 
 ```typescript
-// Example: payOrder service as a Facade
-export async function payOrder(db: DrizzleDB, orderId: string, buyerId: string) {
-  // The handler just calls this one function.
-  // Internally it orchestrates multiple subsystems:
+// payOrder service as a Facade
+export async function payOrder(orderId: string, buyerId: string) {
   return await db.transaction(async (tx) => {
-    // 1. Fetch and validate order state
-    const order = await getOrderForUpdate(tx, orderId);
-    if (order.status !== 'PRICED') throw new BadRequestError('Order is not priced');
-    if (order.buyer_id !== buyerId) throw new ForbiddenError('Not your order');
+    // 1. Fetch and lock the order
+    const [row] = await tx
+      .select()
+      .from(ordersTable)
+      .where(eq(ordersTable.id, orderId))
+      .for("update")
+      .limit(1);
 
-    // 2. Validate and deduct buyer balance
-    const totalAmount = order.item_price + 5000;
-    const buyer = await getUserForUpdate(tx, buyerId);
-    if (buyer.balance < totalAmount) throw new BadRequestError('Insufficient balance');
-    await decreaseBalance(tx, buyerId, totalAmount);
+    // 2. Validate order state and actor permission
+    const order = getOrderOrThrow(row);
+    validateTransition(order.status, "pay", buyerId, order.buyerId, order.kurirId);
+    const emails = await getParticipantEmails(order.buyerId, order.kurirId);
 
-    // 3. Create transaction record
-    await createTransactionRecord(tx, buyerId, 'PAYMENT', totalAmount, orderId);
+    // 3. Deduct buyer balance and create a PAYMENT transaction
+    const totalAmount = Number(order.itemPrice!) + Number(order.deliveryFee);
+    await executeTransaction(tx, "PAYMENT", buyerId, totalAmount, orderId);
 
-    // 4. Generate security code
+    // 4. Generate the security code used for completion
     const securityCode = generateSecurityCode();
 
     // 5. Update order status
-    await updateOrder(tx, orderId, {
-      status: 'PAID',
-      security_code: securityCode,
-    });
+    const [updated] = await tx
+      .update(ordersTable)
+      .set({
+        status: "PAID",
+        securityCode,
+        updatedAt: new Date(),
+      })
+      .where(eq(ordersTable.id, orderId))
+      .returning();
 
-    return { securityCode, totalAmount };
+    return {
+      message: "Payment successful",
+      security_code: securityCode,
+      order: toOrderDTO(updated, emails.buyerEmail, emails.kurirEmail),
+    };
   });
 }
 ```

@@ -1,6 +1,7 @@
 export type OrderStatus =
-  | "OPEN"
+  | "PENDING"
   | "ACCEPTED"
-  | "PRICE_PROPOSED"
-  | "DELIVERING"
-  | "DELIVERED";
+  | "PRICED"
+  | "PAID"
+  | "COMPLETED"
+  | "CANCELLED";
