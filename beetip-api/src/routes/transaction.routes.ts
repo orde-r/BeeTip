@@ -4,12 +4,14 @@ import {
   TopUpBodySchema,
   TopUpResponseSchema,
 } from "../dtos/transaction.dto.js";
-import { ErrorResponseSchema } from "../dtos/auth.dto.js";
+import { ErrorResponseSchema } from "../dtos/error.dto.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 import { UnauthorizedError } from "../errors/unauthorized.error.js";
 import { deposit, listUserTransactions } from "../services/transaction.service.js";
 
-export const transactionApp = new OpenAPIHono();
+import { validationHook } from "../validation.js";
+
+export const transactionApp = new OpenAPIHono({ defaultHook: validationHook });
 
 transactionApp.use("/transactions/*", authMiddleware);
 
@@ -36,10 +38,10 @@ const listTransactionsRoute = createRoute({
 });
 
 transactionApp.openapi(listTransactionsRoute, async (c) => {
-  const user = c.get("user" as never);
+  const user = c.get("user");
   if (!user) throw new UnauthorizedError();
 
-  const result = await listUserTransactions((user as any).id);
+  const result = await listUserTransactions(user.id);
   return c.json(result, 200);
 });
 
@@ -80,10 +82,10 @@ const depositRoute = createRoute({
 });
 
 transactionApp.openapi(depositRoute, async (c) => {
-  const user = c.get("user" as never);
+  const user = c.get("user");
   if (!user) throw new UnauthorizedError();
 
   const { amount } = c.req.valid("json");
-  const result = await deposit((user as any).id, amount);
+  const result = await deposit(user.id, amount);
   return c.json(result, 200);
 });

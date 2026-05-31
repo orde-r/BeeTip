@@ -15,7 +15,7 @@ export default function ChatDetailHeader({ order }: ChatDetailHeaderProps) {
         <span className="material-symbols-outlined">arrow_back</span>
       </Link>
       <div>
-        <p className="chat-detail-title">{order.to_location}</p>
+        <p className="chat-detail-title">{order.toLocation}</p>
         <p className="chat-detail-subtitle">
           {order.status} - {formatDate(order.createdAt)}
         </p>

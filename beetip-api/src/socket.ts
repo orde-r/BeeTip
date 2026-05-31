@@ -4,6 +4,8 @@ import jwt from "jsonwebtoken";
 import { saveMessage, validateUserInOrder } from "./services/chat.service.js";
 import type { UserPayload } from "./middlewares/auth.middleware.js";
 import type { OrderDTO } from "./dtos/order.dto.js";
+import { UnauthorizedError } from "./errors/unauthorized.error.js";
+import { getCorsOrigin } from "./config.js";
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 let chatNamespaceRef: Namespace | null = null;
@@ -17,25 +19,33 @@ export function emitOrderStatusChanged(order: OrderDTO) {
 export function initSocketServer(httpServer: HttpServer) {
   const io = new Server(httpServer, {
     cors: {
-      origin: "*", // Adjust for production
+      origin: getCorsOrigin(),
     },
   });
 
   const chatNamespace = io.of("/chat");
   chatNamespaceRef = chatNamespace;
 
-  // Authentication Middleware
+
   chatNamespace.use((socket, next) => {
-    const token = socket.handshake.auth.token || socket.handshake.headers.authorization?.slice(7);
+    let token = socket.handshake.auth.token || socket.handshake.headers.authorization?.slice(7);
+    
+    if (!token && socket.handshake.headers.cookie) {
+      const match = socket.handshake.headers.cookie.match(/(?:^|;\s*)accessToken=([^;]*)/);
+      if (match) {
+        token = match[1];
+      }
+    }
+
     if (!token) {
-      return next(new Error("Authentication error: Missing token"));
+      return next(new UnauthorizedError("Missing token"));
     }
     try {
       const payload = jwt.verify(token, JWT_SECRET) as UserPayload;
       socket.data.user = payload;
       next();
     } catch (err) {
-      next(new Error("Authentication error: Invalid token"));
+      next(new UnauthorizedError("Invalid token"));
     }
   });
 
@@ -51,13 +61,12 @@ export function initSocketServer(httpServer: HttpServer) {
     socket.on("join_room", async (payload: any) => {
       try {
         const data = typeof payload === "string" ? JSON.parse(payload) : payload;
-        const { order_id } = data;
-        await validateUserInOrder(order_id, user.id);
-        const roomName = `room_order_${order_id}`;
+        const { orderId } = data;
+        await validateUserInOrder(orderId, user.id);
+        const roomName = `room_order_${orderId}`;
         socket.join(roomName);
         console.log(`User ${user.id} joined room ${roomName}`);
-        // Optionally acknowledge success
-        socket.emit("room_joined", { order_id, room: roomName });
+        socket.emit("room_joined", { orderId, room: roomName });
       } catch (error: any) {
         socket.emit("error", { message: error.message || "Failed to join room" });
       }
@@ -66,11 +75,10 @@ export function initSocketServer(httpServer: HttpServer) {
     socket.on("send_message", async (payload: any) => {
       try {
         const data = typeof payload === "string" ? JSON.parse(payload) : payload;
-        const { order_id, content } = data;
-        const message = await saveMessage(order_id, user.id, content);
+        const { orderId, content } = data;
+        const message = await saveMessage(orderId, user.id, content);
         
-        const roomName = `room_order_${order_id}`;
-        // Broadcast to everyone in the room, including sender
+        const roomName = `room_order_${orderId}`;
         chatNamespace.to(roomName).emit("receive_message", message);
       } catch (error: any) {
         socket.emit("error", { message: error.message || "Failed to send message" });

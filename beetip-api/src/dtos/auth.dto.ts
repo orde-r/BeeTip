@@ -24,7 +24,7 @@ export const UserDTOSchema = z
     id: z.string().uuid().openapi({ example: "550e8400-e29b-41d4-a716-446655440000" }),
     email: z.string().email().openapi({ example: "student@binus.ac.id" }),
     balance: z.number().openapi({ example: 0.0 }),
-    current_role: z.string().openapi({ example: "USER" }),
+    currentRole: z.string().openapi({ example: "USER" }),
     createdAt: z.string().datetime().optional().openapi({ example: "2026-05-25T10:00:00.000Z" }),
   })
   .openapi("UserDTO");
@@ -53,12 +53,6 @@ export const AuthMeResponseSchema = z
   })
   .openapi("AuthMeResponse");
 
-
-export const ErrorResponseSchema = z
-  .object({
-    message: z.string().openapi({ example: "Something went wrong" }),
-  })
-  .openapi("ErrorResponse");
 
 export const MessageResponseSchema = z
   .object({

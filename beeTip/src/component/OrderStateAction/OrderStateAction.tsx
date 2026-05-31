@@ -40,10 +40,10 @@ export default function OrderStateAction({
   onCancel,
 }: OrderStateActionProps) {
   const [isCameraOpen, setIsCameraOpen] = useState(false);
-  const isBuyer = order.buyer_id === currentUserId;
-  const isKurir = order.kurir_id === currentUserId;
-  const total = (order.item_price ?? 0) + order.delivery_fee;
-  const receiptPreview = receiptImageUrl || order.receipt_image_url;
+  const isBuyer = order.buyerId === currentUserId;
+  const isKurir = order.kurirId === currentUserId;
+  const total = (order.itemPrice ?? 0) + order.deliveryFee;
+  const receiptPreview = receiptImageUrl || order.receiptImageUrl;
 
   const renderPriceForm = (title: string, submitLabel: string) => (
     <form className="chat-action-panel" onSubmit={onUploadPrice}>
@@ -55,7 +55,7 @@ export default function OrderStateAction({
           min="1"
           value={price}
           onChange={(e) => onPriceChange(e.target.value)}
-          placeholder={order.item_price ? String(order.item_price) : "25000"}
+          placeholder={order.itemPrice ? String(order.itemPrice) : "25000"}
           required
         />
       </label>

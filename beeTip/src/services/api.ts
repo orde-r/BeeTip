@@ -22,7 +22,7 @@ interface UserResponse {
 }
 
 interface OrderResponse {
-  message?: string;
+  message: string;
   order: Order;
 }
 
@@ -32,7 +32,7 @@ interface OrdersResponse {
 }
 
 interface PayOrderResponse extends OrderResponse {
-  security_code: string;
+  securityCode: string;
 }
 
 interface MessagesResponse {
@@ -41,7 +41,7 @@ interface MessagesResponse {
 
 interface DepositResponse {
   message: string;
-  new_balance: number;
+  newBalance: number;
 }
 
 interface TransactionsResponse {
@@ -49,13 +49,21 @@ interface TransactionsResponse {
   total: number;
 }
 
+export interface ValidationErrorDetail {
+  path: string[];
+  message: string;
+  code: string;
+}
+
 export class ApiError extends Error {
   status: number;
+  details?: ValidationErrorDetail[];
 
-  constructor(message: string, status: number) {
+  constructor(message: string, status: number, details?: ValidationErrorDetail[]) {
     super(message);
     this.name = "ApiError";
     this.status = status;
+    this.details = details;
   }
 }
 
@@ -78,15 +86,21 @@ async function apiRequest<T>(path: string, options: ApiRequestOptions = {}): Pro
 
   if (!response.ok) {
     let message = "Something went wrong";
+    let details: ValidationErrorDetail[] | undefined;
 
     try {
-      const error = (await response.json()) as { message?: string; error?: string };
+      const error = (await response.json()) as {
+        message?: string;
+        error?: string;
+        errors?: ValidationErrorDetail[];
+      };
       message = error.message ?? error.error ?? message;
+      details = error.errors;
     } catch {
       message = response.statusText || message;
     }
 
-    throw new ApiError(message, response.status);
+    throw new ApiError(message, response.status, details);
   }
 
   if (response.status === 204) {
@@ -136,8 +150,8 @@ export const orderApi = {
       method: "POST",
       token,
       body: {
-        to_location: toLocation,
-        item_desc: itemDesc,
+        toLocation,
+        itemDesc: itemDesc,
       },
     }),
   accept: (token: string, orderId: string) =>
@@ -155,8 +169,8 @@ export const orderApi = {
       method: "POST",
       token,
       body: {
-        item_price: itemPrice,
-        ...(receiptImageUrl ? { receipt_image_url: receiptImageUrl } : {}),
+        itemPrice,
+        ...(receiptImageUrl ? { receiptImageUrl } : {}),
       },
     }),
   pay: (token: string, orderId: string) =>
@@ -169,7 +183,7 @@ export const orderApi = {
       method: "POST",
       token,
       body: {
-        security_code: securityCode,
+        securityCode,
       },
     }),
   cancel: (token: string, orderId: string) =>

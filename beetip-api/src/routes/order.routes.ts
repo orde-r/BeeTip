@@ -13,7 +13,7 @@ import {
   OrderDTOSchema,
 } from "../dtos/order.dto.js";
 import { ListMessagesResponseSchema } from "../dtos/message.dto.js";
-import { ErrorResponseSchema } from "../dtos/auth.dto.js";
+import { ErrorResponseSchema } from "../dtos/error.dto.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 import { UnauthorizedError } from "../errors/unauthorized.error.js";
 import { getOrderMessages } from "../services/chat.service.js";
@@ -31,7 +31,9 @@ import {
 import { emitOrderStatusChanged } from "../socket.js";
 
 
-export const orderApp = new OpenAPIHono();
+import { validationHook } from "../validation.js";
+
+export const orderApp = new OpenAPIHono({ defaultHook: validationHook });
 
 orderApp.use("/orders", authMiddleware);
 orderApp.use("/orders/*", authMiddleware);
@@ -63,10 +65,10 @@ const listMyOrdersRoute = createRoute({
 });
 
 orderApp.openapi(listMyOrdersRoute, async (c) => {
-  const user = c.get("user" as never);
+  const user = c.get("user");
   if (!user) throw new UnauthorizedError();
 
-  const result = await listUserOrders((user as any).id);
+  const result = await listUserOrders(user.id);
   return c.json(result, 200);
 });
 
@@ -115,11 +117,11 @@ const createOrderRoute = createRoute({
 });
 
 orderApp.openapi(createOrderRoute, async (c) => {
-  const user = c.get("user" as never);
+  const user = c.get("user");
   if (!user) throw new UnauthorizedError();
 
-  const { to_location, item_desc } = c.req.valid("json");
-  const result = await createOrder((user as any).id, to_location, item_desc);
+  const { toLocation, itemDesc } = c.req.valid("json");
+  const result = await createOrder(user.id, toLocation, itemDesc);
   return c.json(result, 201);
 });
 
@@ -150,7 +152,7 @@ const listAvailableOrdersRoute = createRoute({
 });
 
 orderApp.openapi(listAvailableOrdersRoute, async (c) => {
-  const user = c.get("user" as never);
+  const user = c.get("user");
   if (!user) throw new UnauthorizedError();
 
   const result = await listAvailableOrders();
@@ -193,11 +195,11 @@ const getOrderRoute = createRoute({
 });
 
 orderApp.openapi(getOrderRoute, async (c) => {
-  const user = c.get("user" as never);
+  const user = c.get("user");
   if (!user) throw new UnauthorizedError();
 
   const { id } = c.req.valid("param");
-  const result = await getOrderById(id, (user as any).id);
+  const result = await getOrderById(id, user.id);
   return c.json(result, 200);
 });
 
@@ -257,11 +259,11 @@ const acceptOrderRoute = createRoute({
 });
 
 orderApp.openapi(acceptOrderRoute, async (c) => {
-  const user = c.get("user" as never);
+  const user = c.get("user");
   if (!user) throw new UnauthorizedError();
 
   const { id } = c.req.valid("param");
-  const result = await acceptOrder(id, (user as any).id);
+  const result = await acceptOrder(id, user.id);
   emitOrderStatusChanged(result.order);
   return c.json(result, 200);
 });
@@ -314,12 +316,12 @@ const uploadPriceRoute = createRoute({
 });
 
 orderApp.openapi(uploadPriceRoute, async (c) => {
-  const user = c.get("user" as never);
+  const user = c.get("user");
   if (!user) throw new UnauthorizedError();
 
   const { id } = c.req.valid("param");
-  const { item_price, receipt_image_url } = c.req.valid("json");
-  const result = await uploadPrice(id, (user as any).id, item_price, receipt_image_url);
+  const { itemPrice, receiptImageUrl } = c.req.valid("json");
+  const result = await uploadPrice(id, user.id, itemPrice, receiptImageUrl);
   emitOrderStatusChanged(result.order);
   return c.json(result, 200);
 });
@@ -364,11 +366,11 @@ const payOrderRoute = createRoute({
 });
 
 orderApp.openapi(payOrderRoute, async (c) => {
-  const user = c.get("user" as never);
+  const user = c.get("user");
   if (!user) throw new UnauthorizedError();
 
   const { id } = c.req.valid("param");
-  const result = await payOrder(id, (user as any).id);
+  const result = await payOrder(id, user.id);
   emitOrderStatusChanged(result.order);
   return c.json(result, 200);
 });
@@ -421,12 +423,12 @@ const completeOrderRoute = createRoute({
 });
 
 orderApp.openapi(completeOrderRoute, async (c) => {
-  const user = c.get("user" as never);
+  const user = c.get("user");
   if (!user) throw new UnauthorizedError();
 
   const { id } = c.req.valid("param");
-  const { security_code } = c.req.valid("json");
-  const result = await completeOrder(id, (user as any).id, security_code);
+  const { securityCode } = c.req.valid("json");
+  const result = await completeOrder(id, user.id, securityCode);
   emitOrderStatusChanged(result.order);
   return c.json(result, 200);
 });
@@ -471,11 +473,11 @@ const cancelOrderRoute = createRoute({
 });
 
 orderApp.openapi(cancelOrderRoute, async (c) => {
-  const user = c.get("user" as never);
+  const user = c.get("user");
   if (!user) throw new UnauthorizedError();
 
   const { id } = c.req.valid("param");
-  const result = await cancelOrder(id, (user as any).id);
+  const result = await cancelOrder(id, user.id);
   emitOrderStatusChanged(result.order);
   return c.json(result, 200);
 });
@@ -516,10 +518,10 @@ const orderMessagesRoute = createRoute({
 });
 
 orderApp.openapi(orderMessagesRoute, async (c) => {
-  const user = c.get("user" as never);
+  const user = c.get("user");
   if (!user) throw new UnauthorizedError();
 
   const { id } = c.req.valid("param");
-  const result = await getOrderMessages(id, (user as any).id);
+  const result = await getOrderMessages(id, user.id);
   return c.json(result, 200);
 });

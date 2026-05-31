@@ -6,14 +6,16 @@ import {
   AuthLoginBodySchema,
   AuthLoginResponseSchema,
   AuthMeResponseSchema,
-  ErrorResponseSchema,
   MessageResponseSchema,
 } from "../dtos/auth.dto.js";
+import { ErrorResponseSchema } from "../dtos/error.dto.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 import { UnauthorizedError } from "../errors/unauthorized.error.js";
 import { registerUser, loginUser, getUserById } from "../services/auth.service.js";
 
-export const authApp = new OpenAPIHono();
+import { validationHook } from "../validation.js";
+
+export const authApp = new OpenAPIHono({ defaultHook: validationHook });
 
 const registerRoute = createRoute({
   method: "post",
@@ -152,10 +154,10 @@ const meRoute = createRoute({
 });
 
 authApp.openapi(meRoute, async (c) => {
-  const user = c.get("user" as never);
+  const user = c.get("user");
   if (!user) throw new UnauthorizedError();
 
-  const result = await getUserById((user as any).id);
+  const result = await getUserById(user.id);
   return c.json(result, 200);
 });
 
