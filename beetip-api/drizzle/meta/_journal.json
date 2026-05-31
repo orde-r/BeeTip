@@ -5,50 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1779721278472,
-      "tag": "0000_tense_amazoness",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1779766158067,
-      "tag": "0001_tough_norman_osborn",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1779798410773,
-      "tag": "0002_late_mattie_franklin",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1779817735016,
-      "tag": "0003_bouncy_freak",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1779920000000,
-      "tag": "0004_add_order_receipt_image_url",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1779930000000,
-      "tag": "0005_receipt_image_text",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1780154555756,
-      "tag": "0006_unknown_bromley",
+      "when": 1780200895675,
+      "tag": "0000_pale_strong_guy",
       "breakpoints": true
     }
   ]
