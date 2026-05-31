@@ -1,4 +1,4 @@
-import type { MiddlewareHandler } from "hono";
+import { createMiddleware } from "hono/factory";
 import { getCookie } from "hono/cookie";
 import jwt from "jsonwebtoken";
 import { UnauthorizedError } from "../errors/unauthorized.error.js";
@@ -15,9 +15,15 @@ export interface UserPayload {
   role: string;
 }
 
+declare module "hono" {
+  interface ContextVariableMap {
+    user: UserPayload;
+  }
+}
+
 const JWT_SECRET = process.env.JWT_SECRET!;
 
-export const authMiddleware: MiddlewareHandler = async (c, next) => {
+export const authMiddleware = createMiddleware(async (c, next) => {
   const authHeader = c.req.header("Authorization");
   let token: string | undefined;
 
@@ -39,4 +45,4 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
   }
 
   await next();
-};
+});

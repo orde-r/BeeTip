@@ -154,10 +154,10 @@ const meRoute = createRoute({
 });
 
 authApp.openapi(meRoute, async (c) => {
-  const user = c.get("user" as never);
+  const user = c.get("user");
   if (!user) throw new UnauthorizedError();
 
-  const result = await getUserById((user as any).id);
+  const result = await getUserById(user.id);
   return c.json(result, 200);
 });
 
