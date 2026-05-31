@@ -15,7 +15,7 @@ export default function ChatMessages({
     <div className="chat-messages">
       {messages.length > 0 ? (
         messages.map((message) => {
-          const isOwnMessage = message.sender_id === currentUserId;
+          const isOwnMessage = message.senderId === currentUserId;
 
           return (
             <div

@@ -10,6 +10,7 @@ import { transactionApp } from './routes/transaction.routes.js'
 import { initSocketServer } from './socket.js'
 import type { UserPayload } from './middlewares/auth.middleware.js'
 import { validationHook } from './validation.js'
+import { getCorsOrigin } from './config.js'
 
 type AppVariables = { Variables: { user: UserPayload } };
 
@@ -18,7 +19,7 @@ const app = new OpenAPIHono<AppVariables>({
 })
 
 app.use('*', cors({
-  origin: process.env.CORS_ORIGIN ?? '*',
+  origin: getCorsOrigin(),
   allowHeaders: ['Content-Type', 'Authorization'],
   allowMethods: ['GET', 'POST', 'OPTIONS'],
 }))

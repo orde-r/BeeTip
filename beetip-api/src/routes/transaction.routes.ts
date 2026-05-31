@@ -38,10 +38,10 @@ const listTransactionsRoute = createRoute({
 });
 
 transactionApp.openapi(listTransactionsRoute, async (c) => {
-  const user = c.get("user" as never);
+  const user = c.get("user");
   if (!user) throw new UnauthorizedError();
 
-  const result = await listUserTransactions((user as any).id);
+  const result = await listUserTransactions(user.id);
   return c.json(result, 200);
 });
 
@@ -82,10 +82,10 @@ const depositRoute = createRoute({
 });
 
 transactionApp.openapi(depositRoute, async (c) => {
-  const user = c.get("user" as never);
+  const user = c.get("user");
   if (!user) throw new UnauthorizedError();
 
   const { amount } = c.req.valid("json");
-  const result = await deposit((user as any).id, amount);
+  const result = await deposit(user.id, amount);
   return c.json(result, 200);
 });

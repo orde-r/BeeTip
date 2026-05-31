@@ -17,7 +17,7 @@ interface ParticipantMeta {
 
 const getOrderedByMeta = (order: Order): ParticipantMeta => ({
   label: "Ordered by",
-  value: order.buyer_email ?? "Unknown buyer",
+  value: order.buyerEmail ?? "Unknown buyer",
 });
 
 const getCounterpartyMeta = (
@@ -26,14 +26,14 @@ const getCounterpartyMeta = (
 ): ParticipantMeta | null => {
   if (!viewerId) return null;
 
-  if (order.buyer_id === viewerId) {
+  if (order.buyerId === viewerId) {
     return {
       label: "Taken by",
-      value: order.kurir_email ?? "No kurir yet",
+      value: order.kurirEmail ?? "No kurir yet",
     };
   }
 
-  if (order.kurir_id === viewerId) {
+  if (order.kurirId === viewerId) {
     return getOrderedByMeta(order);
   }
 

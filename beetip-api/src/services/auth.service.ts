@@ -17,7 +17,7 @@ function toUserDTO(row: typeof usersTable.$inferSelect): UserDTO {
     id: row.id,
     email: row.email,
     balance: Number(row.balance),
-    current_role: row.currentRole,
+    currentRole: row.currentRole,
     createdAt: row.createdAt.toISOString(),
   };
 }

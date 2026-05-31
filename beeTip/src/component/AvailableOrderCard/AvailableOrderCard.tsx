@@ -20,10 +20,10 @@ export default function AvailableOrderCard({
     <div className="available-order-card">
       <div className="available-order-header">
         <span>{formatDate(order.createdAt)}</span>
-        <span>{formatCurrency(order.delivery_fee)} fee</span>
+        <span>{formatCurrency(order.deliveryFee)} fee</span>
       </div>
-      <p className="available-order-location">{order.to_location}</p>
-      <p className="available-order-detail">{order.item_desc}</p>
+      <p className="available-order-location">{order.toLocation}</p>
+      <p className="available-order-detail">{order.itemDesc}</p>
       <OrderParticipantMeta order={order} mode="orderedBy" />
       <button
         type="button"

@@ -69,8 +69,8 @@ export default function Orders() {
 
     return orders.filter((order) => {
       return (
-        order.to_location.toLowerCase().includes(normalizedSearch) ||
-        order.item_desc.toLowerCase().includes(normalizedSearch)
+        order.toLocation.toLowerCase().includes(normalizedSearch) ||
+        order.itemDesc.toLowerCase().includes(normalizedSearch)
       );
     });
   }, [orders, search]);
@@ -105,7 +105,7 @@ export default function Orders() {
             <p className="empty-state">Loading orders...</p>
           ) : filteredOrders.length > 0 ? (
             filteredOrders.map((order) => {
-              const isOwnOrder = order.buyer_id === currentUser?.id;
+              const isOwnOrder = order.buyerId === currentUser?.id;
 
               return (
                 <AvailableOrderCard

@@ -62,15 +62,15 @@ const getCardDisplay = (data: Order): CardDisplay => {
 
 const getRoleLabel = (data: Order, viewerId?: string): string => {
   if (!viewerId) return "Order";
-  if (data.buyer_id === viewerId) return "Buyer";
-  if (data.kurir_id === viewerId) return "Kurir";
+  if (data.buyerId === viewerId) return "Buyer";
+  if (data.kurirId === viewerId) return "Kurir";
   return "Available";
 };
 
 export default function UserOrderCard({ data, viewerId }: UserOrderCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const display = getCardDisplay(data);
-  const total = (data.item_price ?? 0) + data.delivery_fee;
+  const total = (data.itemPrice ?? 0) + data.deliveryFee;
 
   return (
     <div className="userorder-card">
@@ -109,7 +109,7 @@ export default function UserOrderCard({ data, viewerId }: UserOrderCardProps) {
                 <p className="userorder-courier-label">
                   {getRoleLabel(data, viewerId)}
                 </p>
-                <p className="userorder-courier-value">{data.to_location}</p>
+                <p className="userorder-courier-value">{data.toLocation}</p>
               </div>
             </div>
 
@@ -121,9 +121,9 @@ export default function UserOrderCard({ data, viewerId }: UserOrderCardProps) {
             </Link>
           </div>
 
-          <p className="userorder-detail">{data.item_desc}</p>
+          <p className="userorder-detail">{data.itemDesc}</p>
           <p className="userorder-total">
-            {data.item_price ? formatCurrency(total) : "Waiting for price"}
+            {data.itemPrice ? formatCurrency(total) : "Waiting for price"}
           </p>
           <OrderParticipantMeta order={data} viewerId={viewerId} />
         </>
