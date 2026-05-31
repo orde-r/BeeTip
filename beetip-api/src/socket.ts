@@ -28,7 +28,15 @@ export function initSocketServer(httpServer: HttpServer) {
 
 
   chatNamespace.use((socket, next) => {
-    const token = socket.handshake.auth.token || socket.handshake.headers.authorization?.slice(7);
+    let token = socket.handshake.auth.token || socket.handshake.headers.authorization?.slice(7);
+    
+    if (!token && socket.handshake.headers.cookie) {
+      const match = socket.handshake.headers.cookie.match(/(?:^|;\s*)accessToken=([^;]*)/);
+      if (match) {
+        token = match[1];
+      }
+    }
+
     if (!token) {
       return next(new UnauthorizedError("Missing token"));
     }
