@@ -5,6 +5,7 @@ import { saveMessage, validateUserInOrder } from "./services/chat.service.js";
 import type { UserPayload } from "./middlewares/auth.middleware.js";
 import type { OrderDTO } from "./dtos/order.dto.js";
 import { UnauthorizedError } from "./errors/unauthorized.error.js";
+import { getCorsOrigin } from "./config.js";
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 let chatNamespaceRef: Namespace | null = null;
@@ -16,14 +17,9 @@ export function emitOrderStatusChanged(order: OrderDTO) {
 }
 
 export function initSocketServer(httpServer: HttpServer) {
-  const corsOrigin = process.env.CORS_ORIGIN;
-  if (!corsOrigin) {
-    throw new Error('CORS_ORIGIN is not set in .env');
-  }
-
   const io = new Server(httpServer, {
     cors: {
-      origin: corsOrigin.includes(',') ? corsOrigin.split(',').map(o => o.trim()) : corsOrigin,
+      origin: getCorsOrigin(),
     },
   });
 
