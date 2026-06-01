@@ -23,6 +23,8 @@ type OrderStateRendererProps = {
   actionError: string;
   onCancel: () => void;
   onRelease: () => void;
+  onPay: () => void;
+  onComplete: () => void;
   onPrice: (payload: {
     item_price: number;
     receipt_image_url?: string;
@@ -37,6 +39,8 @@ export function OrderStateRenderer({
   actionError,
   onCancel,
   onRelease,
+  onPay,
+  onComplete,
   onPrice,
 }: OrderStateRendererProps) {
   const chatTo = `/orders/${order.id}/chat`;
@@ -53,7 +57,7 @@ export function OrderStateRenderer({
   }
 
   const homeTo = actor === "KURIR" ? routes.kurirHome : routes.buyerHome;
-  const homeLabel = "Back to Previous Page";
+  const homeLabel = "Back to Home Page";
 
   return (
     <>
@@ -67,6 +71,7 @@ export function OrderStateRenderer({
           securityCode={securityCode}
           isMutating={isMutating}
           onCancel={onCancel}
+          onPay={onPay}
         />
       ) : (
         <KurirOrderState
@@ -75,6 +80,7 @@ export function OrderStateRenderer({
           homeTo={homeTo}
           homeLabel={homeLabel}
           isMutating={isMutating}
+          onComplete={onComplete}
           onRelease={onRelease}
           onPrice={onPrice}
         />
@@ -91,6 +97,7 @@ function BuyerOrderState({
   securityCode,
   isMutating,
   onCancel,
+  onPay,
 }: {
   order: OrderDTO;
   chatTo: string;
@@ -99,6 +106,7 @@ function BuyerOrderState({
   securityCode: string | null;
   isMutating: boolean;
   onCancel: () => void;
+  onPay: () => void;
 }) {
   switch (order.status) {
     case "PENDING":
@@ -139,7 +147,7 @@ function BuyerOrderState({
           <PriceBreakdown order={order} />
           <ChatPreview to={chatTo} />
           <OrderActionBar>
-            <PrimaryActionButton to={`/orders/${order.id}/payment`}>
+            <PrimaryActionButton type="button" onClick={onPay}>
               Pay now
             </PrimaryActionButton>
             <GhostActionButton onClick={onCancel} disabled={isMutating}>
@@ -198,6 +206,7 @@ function KurirOrderState({
   homeTo,
   homeLabel,
   isMutating,
+  onComplete,
   onRelease,
   onPrice,
 }: {
@@ -206,6 +215,7 @@ function KurirOrderState({
   homeTo: string;
   homeLabel: string;
   isMutating: boolean;
+  onComplete: () => void;
   onRelease: () => void;
   onPrice: (payload: {
     item_price: number;
@@ -258,7 +268,7 @@ function KurirOrderState({
           <PriceBreakdown order={order} />
           <ChatPreview to={chatTo} />
           <OrderActionBar>
-            <PrimaryActionButton to={`/kurir/orders/${order.id}/security`}>
+            <PrimaryActionButton type="button" onClick={onComplete}>
               Enter security code
             </PrimaryActionButton>
             <GhostActionButton to={homeTo}>{homeLabel}</GhostActionButton>

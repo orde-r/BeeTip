@@ -17,7 +17,7 @@ export function ChatBubble({ message, isOwnMessage }: ChatBubbleProps) {
     >
       <div
         className={cn(
-          'max-w-xs rounded-2xl px-4 py-3 shadow-card',
+          'max-w-[85%] rounded-2xl px-4 py-3 shadow-card',
           isOwnMessage
             ? 'bg-campus-primary text-campus-on-primary'
             : 'border border-campus-outline/60 bg-campus-card text-campus-text',

@@ -7,8 +7,7 @@ import { VelocityBottomNav } from '../components/layout/VelocityBottomNav'
 import { BalanceSummary } from '../components/wallet/BalanceSummary'
 import { routes } from '../app/routes'
 import { logout } from '../services/authApi'
-import { useAuth } from '../state/AuthContext'
-import { useSecurityCodes } from '../state/SecurityCodeContext'
+import { useAuth, useSecurityCodes } from '../store'
 import { getNameFromEmail } from '../utils/orderDisplay'
 
 export function ProfilePage() {
@@ -51,6 +50,7 @@ export function ProfilePage() {
     <PageShell
       title="Profile"
       description="Account details for your BeeTip session."
+      isTopBarSticky={false}
       action={null}
     >
       {isLoading ? <Notice>Loading profile.</Notice> : null}

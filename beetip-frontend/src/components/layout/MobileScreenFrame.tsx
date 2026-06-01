@@ -21,7 +21,7 @@ export function MobileScreenFrame({
     >
       <section
         className={cn(
-          'mx-auto flex min-h-screen w-full max-w-mobile flex-col bg-campus-surface px-5 pb-[calc(24px+env(safe-area-inset-bottom))] pt-6',
+          'mx-auto flex min-h-screen w-full flex-col bg-campus-surface px-5 pb-[calc(24px+env(safe-area-inset-bottom))] pt-6 sm:max-w-mobile',
           contentClassName,
         )}
       >

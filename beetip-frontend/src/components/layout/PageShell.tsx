@@ -5,18 +5,20 @@ import { MobileScreenFrame } from "./MobileScreenFrame";
 
 type PageShellProps = {
   title: string;
-  eyebrow?: string;
   description?: string;
   backTo?: string;
+  isTopBarSticky?: boolean;
+  topAction?: ReactNode;
   action?: ReactNode;
   children?: ReactNode;
 };
 
 export function PageShell({
   title,
-  eyebrow = "BeeTip",
   description,
   backTo,
+  isTopBarSticky = true,
+  topAction,
   action,
   children,
 }: PageShellProps) {
@@ -24,9 +26,10 @@ export function PageShell({
     <MobileScreenFrame>
       <AppTopBar
         title={title}
-        eyebrow={eyebrow}
         description={description}
         backTo={backTo}
+        isSticky={isTopBarSticky}
+        topAction={topAction}
         action={
           action !== undefined ? (
             action

@@ -9,7 +9,7 @@ import { BalanceSummary } from '../components/wallet/BalanceSummary'
 import { TransactionList } from '../components/wallet/TransactionList'
 import { ApiClientError } from '../services/apiClient'
 import { deposit, getHistory } from '../services/transactionsApi'
-import { useAuth } from '../state/AuthContext'
+import { useAuth } from '../store'
 import type { TransactionDTO } from '../types/api'
 import { formatRupiahInput, parseRupiahInput } from '../utils/format'
 
@@ -22,17 +22,19 @@ export function WalletPage() {
   const [depositError, setDepositError] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [isDepositing, setIsDepositing] = useState(false)
+  const [walletBalance, setWalletBalance] = useState<number | null>(null)
 
   const loadWallet = useCallback(async () => {
     setIsLoading(true)
     setLoadError('')
 
     try {
-      const [, historyResponse] = await Promise.all([
+      const [refreshedUser, historyResponse] = await Promise.all([
         refreshUser(),
         getHistory(),
       ])
 
+      setWalletBalance(refreshedUser?.balance ?? null)
       setTransactions(historyResponse.transactions)
     } catch (error) {
       setLoadError(getErrorMessage(error, 'Unable to load wallet details.'))
@@ -61,12 +63,16 @@ export function WalletPage() {
 
     try {
       const response = await deposit({ amount: parsedAmount })
-      const currentUser = user ?? (await refreshUser())
+      const nextBalance =
+        typeof response.new_balance === 'number'
+          ? response.new_balance
+          : (await refreshUser())?.balance
 
-      if (currentUser) {
+      if (typeof nextBalance === 'number') {
+        setWalletBalance(nextBalance)
         updateUser((authenticatedUser) => ({
           ...authenticatedUser,
-          balance: response.new_balance,
+          balance: nextBalance,
         }))
       }
 
@@ -86,6 +92,7 @@ export function WalletPage() {
     <PageShell
       title="Wallet"
       description="Track balance, top up, and review every wallet movement."
+      isTopBarSticky={false}
       action={null}
     >
       {isLoading ? <Notice>Loading wallet.</Notice> : null}
@@ -104,7 +111,7 @@ export function WalletPage() {
       ) : null}
 
       <BalanceSummary
-        balance={user?.balance ?? 0}
+        balance={walletBalance ?? user?.balance ?? 0}
         caption="Used for buyer payments and kurir earnings."
       />
 

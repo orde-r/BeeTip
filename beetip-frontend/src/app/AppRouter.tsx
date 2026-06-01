@@ -4,15 +4,13 @@ import { ProtectedRoute } from './ProtectedRoute'
 import { PublicRoute } from './PublicRoute'
 import { routes } from './routes'
 import { AuthPage } from '../pages/AuthPage'
-import { BuyerHomePage } from '../pages/BuyerHomePage'
 import { ChatPage } from '../pages/ChatPage'
-import { ChatInboxPage } from '../pages/ChatInboxPage'
 import { CreateOrderPage } from '../pages/CreateOrderPage'
-import { KurirHomePage } from '../pages/KurirHomePage'
+import { HomePage } from '../pages/HomePage'
 import { KurirOrderListPage } from '../pages/KurirOrderListPage'
-import { KurirSecurityPage } from '../pages/KurirSecurityPage'
 import { OnboardingPage } from '../pages/OnboardingPage'
 import { OrderDetailPage } from '../pages/OrderDetailPage'
+import { OrderHistoryPage } from '../pages/OrderHistoryPage'
 import { PaymentPage } from '../pages/PaymentPage'
 import { ProfilePage } from '../pages/ProfilePage'
 import { WalletPage } from '../pages/WalletPage'
@@ -29,18 +27,21 @@ export function AppRouter() {
         </Route>
 
         <Route element={<ProtectedRoute />}>
-          <Route path={routes.buyerHome} element={<BuyerHomePage />} />
-          <Route path={routes.kurirHome} element={<KurirHomePage />} />
+          <Route path={routes.buyerHome} element={<HomePage />} />
+          <Route
+            path={routes.kurirHome}
+            element={<HomePage defaultMode="kurir" />}
+          />
           <Route path={routes.kurirOrders} element={<KurirOrderListPage />} />
-          <Route path={routes.chats} element={<ChatInboxPage />} />
+          <Route path={routes.orderHistory} element={<OrderHistoryPage />} />
+          <Route
+            path="/chats"
+            element={<Navigate to={routes.orderHistory} replace />}
+          />
           <Route path={routes.createOrder} element={<CreateOrderPage />} />
           <Route path={routes.orderDetail} element={<OrderDetailPage />} />
           <Route path={routes.orderChat} element={<ChatPage />} />
           <Route path={routes.orderPayment} element={<PaymentPage />} />
-          <Route
-            path={routes.kurirSecurity}
-            element={<KurirSecurityPage />}
-          />
           <Route path={routes.wallet} element={<WalletPage />} />
           <Route path={routes.profile} element={<ProfilePage />} />
         </Route>

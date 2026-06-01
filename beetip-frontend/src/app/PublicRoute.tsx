@@ -1,6 +1,6 @@
 import { Navigate, Outlet } from 'react-router-dom'
 import type { ReactNode } from 'react'
-import { useAuth } from '../state/AuthContext'
+import { useAuth } from '../store'
 import { getAuthenticatedEntryPath } from './routes'
 import { RouteLoadingState } from './AuthRedirect'
 

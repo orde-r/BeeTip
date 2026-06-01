@@ -7,7 +7,7 @@ const API_BASE_URL = (
 ).replace(/\/$/, '')
 
 export type RoomJoinedPayload = {
-  order_id: string
+  orderId: string
   room: string
 }
 
@@ -27,8 +27,8 @@ type ServerToClientEvents = {
 }
 
 type ClientToServerEvents = {
-  join_room: (payload: { order_id: string }) => void
-  send_message: (payload: { order_id: string; content: string }) => void
+  join_room: (payload: { orderId: string }) => void
+  send_message: (payload: { orderId: string; content: string }) => void
 }
 
 export type ChatSocket = Socket<ServerToClientEvents, ClientToServerEvents>
@@ -67,10 +67,10 @@ export function createChatSocketClient(): ChatSocketClient {
       socket.disconnect()
     },
     joinRoom(orderId) {
-      socket.emit('join_room', { order_id: orderId })
+      socket.emit('join_room', { orderId })
     },
     sendMessage(orderId, content) {
-      socket.emit('send_message', { order_id: orderId, content })
+      socket.emit('send_message', { orderId, content })
     },
     onRoomJoined(callback) {
       socket.on('room_joined', callback)

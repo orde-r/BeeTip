@@ -45,8 +45,9 @@ export function CreateOrderPage() {
 
     try {
       const response = await createOrder({
-        to_location: toLocation.trim(),
-        item_desc: buildBackendItemDescription(fromLocation, itemDesc),
+        fromLocation: fromLocation.trim(),
+        toLocation: toLocation.trim(),
+        itemDesc: itemDesc.trim(),
       })
 
       navigate(`/orders/${response.order.id}`)
@@ -162,8 +163,4 @@ function validateForm(
   }
 
   return nextErrors
-}
-
-function buildBackendItemDescription(fromLocation: string, itemDesc: string) {
-  return `From: ${fromLocation.trim()}\nDescription: ${itemDesc.trim()}`
 }

@@ -24,6 +24,7 @@ export type OrderDTO = {
   buyer_email: string | null
   kurir_id: string | null
   kurir_email: string | null
+  from_location: string
   to_location: string
   item_desc: string
   item_price: number | null
@@ -31,6 +32,7 @@ export type OrderDTO = {
   delivery_fee: number
   status: OrderStatus
   createdAt: string
+  updatedAt: string
 }
 
 export type TransactionType = 'DEPOSIT' | 'PAYMENT' | 'EARNING' | string
@@ -86,8 +88,9 @@ export type OrderResponse = {
 }
 
 export type CreateOrderRequest = {
-  to_location: string
-  item_desc: string
+  fromLocation: string
+  toLocation: string
+  itemDesc: string
 }
 
 export type PriceOrderRequest = {
@@ -98,6 +101,7 @@ export type PriceOrderRequest = {
 export type PayOrderResponse = OrderResponse & {
   message: string
   security_code: string
+  securityCode?: string
 }
 
 export type CompleteOrderRequest = {

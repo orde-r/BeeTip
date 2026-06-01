@@ -15,9 +15,7 @@ import { PaymentMethodCard } from '../components/wallet/PaymentMethodCard'
 import { routes } from '../app/routes'
 import { ApiClientError } from '../services/apiClient'
 import { getOrder, payOrder } from '../services/ordersApi'
-import { useParsedOrder } from '../hooks/useParsedOrder'
-import { useAuth } from '../state/AuthContext'
-import { useSecurityCodes } from '../state/SecurityCodeContext'
+import { useAuth, useSecurityCodes } from '../store'
 import type { OrderDTO, UserDTO } from '../types/api'
 import { formatRupiah } from '../utils/format'
 import { getOrderActor, getOrderTotal } from '../utils/orderState'
@@ -65,7 +63,6 @@ export function PaymentPage() {
     () => (order ? getOrderActor(order, account) : 'VIEWER'),
     [account, order],
   )
-  const parsedOrder = useParsedOrder(order)
   const securityCode = order ? getSecurityCode(order.id) : null
   const total = order && order.item_price !== null ? getOrderTotal(order) : 0
   const hasEnoughBalance = account ? account.balance >= total : false
@@ -127,9 +124,9 @@ export function PaymentPage() {
       {order ? (
         <>
           <RouteSummary
-            origin={parsedOrder?.origin ?? undefined}
-            destination={order.to_location}
-            itemDescription={parsedOrder?.request ?? order.item_desc}
+            origin={order.from_location || undefined}
+          destination={order.to_location}
+          itemDescription={order.item_desc}
             deliveryFeeLabel={formatRupiah(order.delivery_fee)}
           />
           

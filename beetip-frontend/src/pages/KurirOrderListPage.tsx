@@ -8,7 +8,7 @@ import { OrderListSection } from "../components/orders/OrderListSection";
 import { routes } from "../app/routes";
 import { ApiClientError } from "../services/apiClient";
 import { acceptOrder, getAvailableOrders } from "../services/ordersApi";
-import { useAuth } from "../state/AuthContext";
+import { useAuth } from "../store";
 import type { OrderDTO, UserDTO } from "../types/api";
 import { useDashboardData } from "../hooks/useDashboardData";
 

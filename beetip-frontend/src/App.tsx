@@ -1,14 +1,12 @@
 import { AppRouter } from './app/AppRouter'
-import { AuthProvider } from './state/AuthContext'
-import { SecurityCodeProvider } from './state/SecurityCodeContext'
+import { AuthBootstrap } from './store'
 
 function App() {
   return (
-    <AuthProvider>
-      <SecurityCodeProvider>
-        <AppRouter />
-      </SecurityCodeProvider>
-    </AuthProvider>
+    <>
+      <AuthBootstrap />
+      <AppRouter />
+    </>
   )
 }
 

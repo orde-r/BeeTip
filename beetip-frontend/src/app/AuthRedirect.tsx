@@ -1,6 +1,6 @@
 import { Navigate } from 'react-router-dom'
 import { MobileScreenFrame } from '../components/layout/MobileScreenFrame'
-import { useAuth } from '../state/AuthContext'
+import { useAuth } from '../store'
 import { getAuthenticatedEntryPath, routes } from './routes'
 
 export function AuthRedirect() {

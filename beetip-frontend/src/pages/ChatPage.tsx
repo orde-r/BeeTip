@@ -1,121 +1,147 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { useParams } from 'react-router-dom'
-import { ChatComposer } from '../components/chat/ChatComposer'
-import { ChatThread } from '../components/chat/ChatThread'
-import { OrderContextHeader } from '../components/chat/OrderContextHeader'
-import { Notice } from '../components/layout/Notice'
-import { PageShell } from '../components/layout/PageShell'
-import { StatusChip } from '../components/orders/StatusChip'
-import { ApiClientError } from '../services/apiClient'
-import { createChatSocketClient, type ChatSocketClient } from '../services/chatSocket'
-import { getMessages, getOrder } from '../services/ordersApi'
-import { useAuth } from '../state/AuthContext'
-import type { MessageDTO, OrderDTO } from '../types/api'
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useParams } from "react-router-dom";
+import { ChatComposer } from "../components/chat/ChatComposer";
+import { ChatThread } from "../components/chat/ChatThread";
+import { Notice } from "../components/layout/Notice";
+import { PageShell } from "../components/layout/PageShell";
+import { ApiClientError } from "../services/apiClient";
+import {
+  createChatSocketClient,
+  type ChatSocketClient,
+} from "../services/chatSocket";
+import {
+  getMessages,
+  getOrder,
+  normalizeMessage,
+  normalizeOrder,
+} from "../services/ordersApi";
+import { useAuth } from "../store";
+import type { MessageDTO, OrderDTO } from "../types/api";
+import { getNameFromEmail } from "../utils/orderDisplay";
+import { OrderContextHeader } from "../components/chat/OrderContextHeader";
 
 export function ChatPage() {
-  const { id } = useParams()
-  const { user } = useAuth()
-  const socketClientRef = useRef<ChatSocketClient | null>(null)
-  const [order, setOrder] = useState<OrderDTO | null>(null)
-  const [messages, setMessages] = useState<MessageDTO[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [isConnected, setIsConnected] = useState(false)
-  const [loadError, setLoadError] = useState('')
-  const [socketError, setSocketError] = useState('')
+  const { id } = useParams();
+  const { user } = useAuth();
+  const socketClientRef = useRef<ChatSocketClient | null>(null);
+  const [order, setOrder] = useState<OrderDTO | null>(null);
+  const [messages, setMessages] = useState<MessageDTO[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isConnected, setIsConnected] = useState(false);
+  const [loadError, setLoadError] = useState("");
+  const [socketError, setSocketError] = useState("");
+  const kurirName = order?.kurir_email
+    ? getNameFromEmail(order.kurir_email)
+        .split(" ")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ")
+    : "Unassigned kurir";
 
   const loadChat = useCallback(async () => {
     if (!id) {
-      setLoadError('Missing order ID.')
-      setIsLoading(false)
-      return
+      setLoadError("Missing order ID.");
+      setIsLoading(false);
+      return;
     }
 
-    setIsLoading(true)
-    setLoadError('')
+    setIsLoading(true);
+    setLoadError("");
 
     try {
       const [orderResponse, messagesResponse] = await Promise.all([
         getOrder(id),
         getMessages(id),
-      ])
-      setOrder(orderResponse.order)
-      setMessages(messagesResponse.messages)
+      ]);
+      setOrder(orderResponse.order);
+      setMessages(messagesResponse.messages);
     } catch (error) {
-      setLoadError(getErrorMessage(error, 'Unable to load this chat.'))
+      setLoadError(getErrorMessage(error, "Unable to load this chat."));
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }, [id])
+  }, [id]);
 
   useEffect(() => {
-    void Promise.resolve().then(loadChat)
-  }, [loadChat])
+    void Promise.resolve().then(loadChat);
+  }, [loadChat]);
 
   useEffect(() => {
     if (!id) {
-      return
+      return;
     }
 
-    const orderId = id
-    const client = createChatSocketClient()
+    const orderId = id;
+    const client = createChatSocketClient();
 
     function handleConnect() {
-      setIsConnected(true)
-      setSocketError('')
-      client.joinRoom(orderId)
+      setIsConnected(true);
+      setSocketError("");
+      client.joinRoom(orderId);
     }
 
     function handleDisconnect() {
-      setIsConnected(false)
+      setIsConnected(false);
     }
 
-    client.socket.on('connect', handleConnect)
-    client.socket.on('disconnect', handleDisconnect)
+    client.socket.on("connect", handleConnect);
+    client.socket.on("disconnect", handleDisconnect);
 
     const removeRoomJoinedListener = client.onRoomJoined(() => {
-      setSocketError('')
-    })
+      setSocketError("");
+    });
     const removeMessageListener = client.onReceiveMessage((message) => {
-      setMessages((currentMessages) => appendMessage(currentMessages, message))
-    })
+      const normalizedMessage = normalizeMessage(message);
+      setMessages((currentMessages) =>
+        appendMessage(currentMessages, normalizedMessage),
+      );
+    });
     const removeOrderListener = client.onOrderStatusChanged((payload) => {
-      setOrder(payload.order)
-    })
+      setOrder(normalizeOrder(payload.order));
+    });
     const removeSocketErrorListener = client.onError((payload) => {
-      setSocketError(payload.message)
-    })
+      setSocketError(payload.message);
+    });
 
-    socketClientRef.current = client
-    client.connect()
+    socketClientRef.current = client;
+    client.connect();
 
     return () => {
-      removeRoomJoinedListener()
-      removeMessageListener()
-      removeOrderListener()
-      removeSocketErrorListener()
-      client.socket.off('connect', handleConnect)
-      client.socket.off('disconnect', handleDisconnect)
-      client.cleanup()
-      socketClientRef.current = null
-    }
-  }, [id])
+      removeRoomJoinedListener();
+      removeMessageListener();
+      removeOrderListener();
+      removeSocketErrorListener();
+      client.socket.off("connect", handleConnect);
+      client.socket.off("disconnect", handleDisconnect);
+      client.cleanup();
+      socketClientRef.current = null;
+    };
+  }, [id]);
 
   function handleSend(content: string) {
-    if (!id || !socketClientRef.current || !isConnected) {
-      return
+    if (
+      !id ||
+      !socketClientRef.current ||
+      !isConnected ||
+      isReadOnlyOrder(order)
+    ) {
+      return;
     }
 
-    socketClientRef.current.sendMessage(id, content)
+    socketClientRef.current.sendMessage(id, content);
   }
 
   return (
     <PageShell
-      title="Order chat"
+      title={kurirName}
       description={
-        isConnected ? 'Connected to the order room.' : 'Connecting to chat.'
+        isReadOnlyOrder(order)
+          ? "Chat history is read-only for closed orders."
+          : isConnected
+            ? "Connected to the order room."
+            : "Connecting to chat."
       }
-      backTo={id ? `/orders/${id}` : '/home'}
-      action={order ? <StatusChip status={order.status} /> : null}
+      backTo={id ? `/orders/${id}` : "/home"}
+      action={null}
     >
       {isLoading ? <Notice>Loading chat history.</Notice> : null}
 
@@ -142,23 +168,36 @@ export function ChatPage() {
         <Notice tone="error">Unable to identify the current user.</Notice>
       )}
 
-      <ChatComposer
-        disabled={!isConnected || Boolean(loadError) || !user}
-        onSend={handleSend}
-        placeholder={isConnected ? 'Type a message' : 'Waiting for connection'}
-      />
+      {isReadOnlyOrder(order) ? (
+        <Notice>
+          This order is closed. You can review the chat history, but new
+          messages are disabled.
+        </Notice>
+      ) : (
+        <ChatComposer
+          disabled={!isConnected || Boolean(loadError) || !user}
+          onSend={handleSend}
+          placeholder={
+            isConnected ? "Type a message" : "Waiting for connection"
+          }
+        />
+      )}
     </PageShell>
-  )
+  );
 }
 
 function appendMessage(messages: MessageDTO[], incomingMessage: MessageDTO) {
   if (messages.some((message) => message.id === incomingMessage.id)) {
-    return messages
+    return messages;
   }
 
-  return [...messages, incomingMessage]
+  return [...messages, incomingMessage];
 }
 
 function getErrorMessage(error: unknown, fallback: string) {
-  return error instanceof ApiClientError ? error.message : fallback
+  return error instanceof ApiClientError ? error.message : fallback;
+}
+
+function isReadOnlyOrder(order: OrderDTO | null) {
+  return order?.status === "COMPLETED" || order?.status === "CANCELLED";
 }

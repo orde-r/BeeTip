@@ -12,7 +12,7 @@ import { PageShell } from '../components/layout/PageShell'
 import { getAuthenticatedEntryPath } from '../app/routes'
 import { ApiClientError } from '../services/apiClient'
 import { login, register } from '../services/authApi'
-import { useAuth } from '../state/AuthContext'
+import { useAuth } from '../store'
 
 type AuthMode = 'login' | 'register'
 

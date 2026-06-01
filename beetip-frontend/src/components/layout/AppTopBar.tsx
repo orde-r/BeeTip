@@ -1,19 +1,22 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import type { ReactNode } from "react";
+import { cn } from "../../utils/className";
 
 type AppTopBarProps = {
   title: string;
-  eyebrow?: string;
   description?: string;
   backTo?: string;
+  isSticky?: boolean;
+  topAction?: ReactNode;
   action?: ReactNode;
 };
 
 export function AppTopBar({
   title,
-  eyebrow = "BeeTip",
   description,
   backTo,
+  isSticky = true,
+  topAction,
   action,
 }: AppTopBarProps) {
   const navigate = useNavigate();
@@ -33,38 +36,43 @@ export function AppTopBar({
   }
 
   return (
-    <header className="space-y-2">
-      <div className="flex min-h-10 items-center justify-between gap-2 mb-5">
-        {backTo ? (
-          <button
-            type="button"
-            aria-label="Go back"
-            onClick={handleBack}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-campus-outline bg-campus-card text-lg font-semibold text-campus-primary shadow-card"
-          > 
-            ‹
-          </button>
-        ) : (
-          <p className="font-sans text-xs font-semibold uppercase leading-4 tracking-wider text-campus-primary">
-            {eyebrow}
-          </p>
-        )}
-      </div>
-
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0 flex-1">
-          <h1 className="font-heading text-2xl font-semibold leading-8 text-campus-text">
-            {title}
-          </h1>
-
-          {description ? (
-            <p className="mt-2 font-sans text-sm leading-5 text-campus-muted">
-              {description}
-            </p>
+    <header
+      className={cn(
+        "-mx-5 -mt-6 -mb-6 border-campus-outline/60 bg-campus-surface p-5",
+        isSticky && "border-b mb-0! sticky top-0 z-20 bg-campus-surface/95 backdrop-blur", 
+      )}
+    >
+      <div className="flex min-h-12 items-center justify-between gap-3">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+          {backTo ? (
+            <button
+              type="button"
+              aria-label="Go back"
+              onClick={handleBack}
+              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-campus-outline bg-campus-card text-lg font-semibold text-campus-primary shadow-card"
+            >
+              ‹
+            </button>
           ) : null}
+          <div className="min-w-0 flex-1">
+            <h1 className="font-heading text-xl font-semibold leading-8 text-campus-text">
+              {title}
+            </h1>
+
+            {description ? (
+              <p className=" font-sans text-xs leading-5 text-campus-muted">
+                {description}
+              </p>
+            ) : null}
+          </div>
         </div>
 
-        {action ? <div className="shrink-0 pt-1">{action}</div> : null}
+        {topAction || action ? (
+          <div className="flex shrink-0 items-center gap-2 pt-1">
+            {topAction}
+            {action}
+          </div>
+        ) : null}
       </div>
     </header>
   );

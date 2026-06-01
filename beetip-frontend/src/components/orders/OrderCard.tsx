@@ -4,7 +4,6 @@ import { StatusChip } from './StatusChip'
 import { SurfaceCard } from '../layout/SurfaceCard'
 import type { OrderDTO } from '../../types/api'
 import { formatDateTime, formatRupiah } from '../../utils/format'
-import { parseOrderDescription } from '../../utils/orderDisplay'
 import { getOrderTotal } from '../../utils/orderState'
 import { cn } from '../../utils/className'
 
@@ -23,7 +22,6 @@ export function OrderCard({
   action,
   muted = false,
 }: OrderCardProps) {
-  const parsedOrder = parseOrderDescription(order.item_desc)
   const totalLabel = formatRupiah(
     order.item_price === null ? order.delivery_fee : getOrderTotal(order),
   )
@@ -35,20 +33,24 @@ export function OrderCard({
         muted && 'opacity-70 saturate-50',
       )}
     >
-
+      <div className="pb-3">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <p className="font-sans text-xs font-semibold uppercase leading-4 tracking-wider text-campus-muted">
               Pick-up
             </p>
             <p className="mt-1 line-clamp-2 font-heading text-lg font-semibold leading-7 text-campus-text">
-              {parsedOrder.title}
+              {order.from_location}
             </p>
             <p className="mt-1 line-clamp-2 font-sans text-xs leading-5 text-campus-muted">
-              {parsedOrder.request}
+              {order.item_desc}
             </p>
           </div>
-          <StatusChip status={order.status} muted={muted} />
+          <StatusChip
+            status={order.status}
+            muted={muted}
+            className="shrink-0"
+          />
         </div>
 
         <div className="mt-3 mb-3 flex items-start gap-2 rounded-xl bg-campus-background px-3 py-2">
@@ -57,7 +59,7 @@ export function OrderCard({
             {order.to_location}
           </p>
         </div>
-
+      </div>
 
       <div className="grid grid-cols-2 ">
         <OrderMetric

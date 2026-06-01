@@ -1,25 +1,35 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 import type { ReactNode } from 'react'
 import { routes } from '../../app/routes'
 import { cn } from '../../utils/className'
 
 const navItems = [
-  { label: 'Buyer', to: routes.buyerHome, icon: <BuyerIcon /> },
-  { label: 'Kurir', to: routes.kurirHome, icon: <KurirIcon /> },
+  {
+    label: 'Home',
+    to: routes.buyerHome,
+    icon: <HomeIcon />,
+    activeWhen: [routes.buyerHome, routes.kurirHome],
+  },
+  { label: 'History', to: routes.orderHistory, icon: <HistoryIcon /> },
   { label: 'Wallet', to: routes.wallet, icon: <WalletIcon /> },
-  { label: 'Chat', to: routes.chats, icon: <ChatIcon /> },
   { label: 'Profile', to: routes.profile, icon: <ProfileIcon /> },
 ]
 
 export function VelocityBottomNav() {
   return (
-    <nav className="sticky bottom-4 mt-auto rounded-3xl bg-campus-card p-2 shadow-floating">
-      <div className="grid grid-cols-5 items-center gap-1">
-        {navItems.map((item) => (
-          <BottomNavLink key={item.to} {...item} />
-        ))}
-      </div>
-    </nav>
+    <>
+      <div
+        aria-hidden="true"
+        className="h-[calc(88px+env(safe-area-inset-bottom))] shrink-0"
+      />
+      <nav className="fixed bottom-[calc(16px+env(safe-area-inset-bottom))] left-1/2 z-30 w-[calc(100%-40px)] max-w-[350px] -translate-x-1/2 rounded-3xl bg-campus-card p-2 shadow-floating">
+        <div className="grid grid-cols-4 items-center gap-1">
+          {navItems.map((item) => (
+            <BottomNavLink key={item.to} {...item} />
+          ))}
+        </div>
+      </nav>
+    </>
   )
 }
 
@@ -27,11 +37,16 @@ function BottomNavLink({
   icon,
   label,
   to,
+  activeWhen,
 }: {
+  activeWhen?: string[]
   icon: ReactNode
   label: string
   to: string
 }) {
+  const location = useLocation()
+  const isAliasActive = activeWhen?.includes(location.pathname) ?? false
+
   return (
     <NavLink
       aria-label={label}
@@ -39,7 +54,7 @@ function BottomNavLink({
       className={({ isActive }) =>
         cn(
           'inline-flex min-h-12 items-center justify-center rounded-2xl px-1 transition',
-          isActive
+          isActive || isAliasActive
             ? 'bg-campus-primary-fixed text-campus-primary-fixed-text'
             : 'text-campus-muted',
         )
@@ -52,7 +67,7 @@ function BottomNavLink({
   )
 }
 
-function BuyerIcon() {
+function HomeIcon() {
   return (
     <svg
       aria-hidden="true"
@@ -64,30 +79,9 @@ function BuyerIcon() {
       strokeWidth="2"
       viewBox="0 0 24 24"
     >
-      <path d="M6 7h12l1 14H5L6 7Z" />
-      <path d="M9 7a3 3 0 0 1 6 0" />
-    </svg>
-  )
-}
-
-function KurirIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      className="size-5"
-      fill="none"
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-      viewBox="0 0 24 24"
-    >
-      <path d="M4 17h2" />
-      <path d="M18 17h2" />
-      <path d="M6 17a3 3 0 0 0 6 0" />
-      <path d="M14 17a3 3 0 0 0 6 0" />
-      <path d="M5 14h13l-2-6H8l-3 6Z" />
-      <path d="M8 8V5h5" />
+      <path d="m3 11 9-8 9 8" />
+      <path d="M5 10v10h14V10" />
+      <path d="M9 20v-6h6v6" />
     </svg>
   )
 }
@@ -111,7 +105,7 @@ function WalletIcon() {
   )
 }
 
-function ChatIcon() {
+function HistoryIcon() {
   return (
     <svg
       aria-hidden="true"
@@ -123,9 +117,11 @@ function ChatIcon() {
       strokeWidth="2"
       viewBox="0 0 24 24"
     >
-      <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v8Z" />
-      <path d="M8 9h8" />
-      <path d="M8 13h5" />
+      <path d="M4 5h16" />
+      <path d="M4 12h16" />
+      <path d="M4 19h16" />
+      <path d="M7 8v4" />
+      <path d="M17 15v4" />
     </svg>
   )
 }
