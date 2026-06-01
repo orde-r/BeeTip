@@ -120,8 +120,8 @@ orderApp.openapi(createOrderRoute, async (c) => {
   const user = c.get("user");
   if (!user) throw new UnauthorizedError();
 
-  const { toLocation, itemDesc } = c.req.valid("json");
-  const result = await createOrder(user.id, toLocation, itemDesc);
+  const { fromLocation, toLocation, itemDesc } = c.req.valid("json");
+  const result = await createOrder(user.id, fromLocation, toLocation, itemDesc);
   return c.json(result, 201);
 });
 

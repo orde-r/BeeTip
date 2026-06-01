@@ -7,6 +7,7 @@ export const OrderDTOSchema = z
     buyerEmail: z.string().email().nullable().openapi({ example: "buyer@binus.ac.id" }),
     kurirId: z.string().uuid().nullable().openapi({ example: null }),
     kurirEmail: z.string().email().nullable().openapi({ example: null }),
+    fromLocation: z.string().openapi({ example: "Canteen" }),
     toLocation: z.string().openapi({ example: "13th floor room 2" }),
     itemDesc: z.string().openapi({ example: "Chicken rice from canteen" }),
     itemPrice: z.number().max(9999999999.99).nullable().openapi({ example: null }),
@@ -22,7 +23,8 @@ export type OrderDTO = z.infer<typeof OrderDTOSchema>;
 
 export const CreateOrderBodySchema = z
   .object({
-    toLocation: z.string().min(1, "Location is required").openapi({ example: "13th floor room 2" }),
+    fromLocation: z.string().min(1, "From location is required").openapi({ example: "Canteen" }),
+    toLocation: z.string().min(1, "Target Location is required").openapi({ example: "13th floor room 2" }),
     itemDesc: z.string().min(1, "Item description is required").openapi({ example: "Chicken rice from canteen" }),
   })
   .openapi("CreateOrderBody");

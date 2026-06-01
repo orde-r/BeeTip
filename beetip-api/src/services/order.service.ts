@@ -24,6 +24,7 @@ function toOrderDTO(
     buyerEmail,
     kurirId: row.kurirId ?? null,
     kurirEmail,
+    fromLocation: row.fromLocation,
     toLocation: row.toLocation,
     itemDesc: row.itemDesc,
     itemPrice: row.itemPrice ? Number(row.itemPrice) : null,
@@ -44,11 +45,12 @@ function generateSecurityCode(): string {
   return crypto.randomInt(100000, 999999).toString();
 }
 
-export async function createOrder(buyerId: string, toLocation: string, itemDesc: string) {
+export async function createOrder(buyerId: string, fromLocation: string, toLocation: string, itemDesc: string) {
   const [newOrder] = await db
     .insert(ordersTable)
     .values({
       buyerId,
+      fromLocation,
       toLocation,
       itemDesc,
     })
