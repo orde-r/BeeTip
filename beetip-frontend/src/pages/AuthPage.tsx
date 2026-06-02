@@ -210,8 +210,10 @@ export function AuthPage() {
     <PageShell
       title={isRegistering ? 'Create account' : 'Welcome back'}
       description="Use your campus email to continue into BeeTip."
+      isTopBarSticky={false}
       action={null}
     >
+      {/* <div className='h-10'></div> */}
       <AuthFormShell
         title={isRegistering ? 'Register for BeeTip' : 'Login to BeeTip'}
         caption={
@@ -222,7 +224,7 @@ export function AuthPage() {
         mode={mode}
         onModeChange={switchMode}
       >
-        <div className="space-y-4" onKeyDown={handleAuthKeyDown}>
+        <div className="space-y-5" onKeyDown={handleAuthKeyDown}>
           {successMessage ? (
             <Notice tone="success">{successMessage}</Notice>
           ) : null}
@@ -302,6 +304,7 @@ export function AuthPage() {
           >
             {isRegistering ? 'I already have an account' : 'Create new account'}
           </GhostActionButton>
+          {/* <div></div> */}
         </div>
       </AuthFormShell>
     </PageShell>
