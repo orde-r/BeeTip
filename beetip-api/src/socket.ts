@@ -20,6 +20,7 @@ export function initSocketServer(httpServer: HttpServer) {
   const io = new Server(httpServer, {
     cors: {
       origin: getCorsOrigin(),
+      credentials: true,
     },
   });
 

@@ -13,6 +13,7 @@ export const ordersTable = pgTable("orders", {
   id: uuid("id").primaryKey().defaultRandom(),
   buyerId: uuid("buyer_id").notNull().references(() => usersTable.id),
   kurirId: uuid("kurir_id").references(() => usersTable.id),
+  fromLocation: varchar("from_location", { length: 500 }).notNull(),
   toLocation: varchar("to_location", { length: 500 }).notNull(),
   itemDesc: varchar("item_desc", { length: 1000 }).notNull(),
   itemPrice: numeric("item_price", { precision: 12, scale: 2 }),

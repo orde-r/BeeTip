@@ -7,8 +7,7 @@ import type { OrderDTO } from "../dtos/order.dto.js";
 import { NotFoundError } from "../errors/not-found.error.js";
 import { BadRequestError } from "../errors/bad-request.error.js";
 import { ForbiddenError } from "../errors/forbidden.error.js";
-import { validateTransition } from "./order-states.js";
-import { executeTransaction } from "./transaction-strategies.js";
+import { processTransaction } from "./transaction.service.js";
 
 const buyerUsers = alias(usersTable, "buyer_users");
 const kurirUsers = alias(usersTable, "kurir_users");
@@ -24,6 +23,7 @@ function toOrderDTO(
     buyerEmail,
     kurirId: row.kurirId ?? null,
     kurirEmail,
+    fromLocation: row.fromLocation,
     toLocation: row.toLocation,
     itemDesc: row.itemDesc,
     itemPrice: row.itemPrice ? Number(row.itemPrice) : null,
@@ -44,11 +44,64 @@ function generateSecurityCode(): string {
   return crypto.randomInt(100000, 999999).toString();
 }
 
-export async function createOrder(buyerId: string, toLocation: string, itemDesc: string) {
+function validateOrderAction(
+  status: string,
+  action: string,
+  userId: string,
+  buyerId: string,
+  kurirId: string | null,
+): string {
+  const isBuyer = userId === buyerId;
+  const isKurir = kurirId !== null && userId === kurirId;
+
+  if (status === "PENDING" && action === "accept") {
+    if (isBuyer) throw new ForbiddenError("Cannot accept your own order");
+    return "ACCEPTED";
+  }
+
+  if (status === "PENDING" && action === "cancel") {
+    if (!isBuyer) throw new ForbiddenError("Only the buyer can perform this action");
+    return "CANCELLED";
+  }
+
+  if (status === "ACCEPTED" && action === "price") {
+    if (!isKurir) throw new ForbiddenError("Only the assigned kurir can perform this action");
+    return "PRICED";
+  }
+
+  if (status === "ACCEPTED" && action === "cancel") {
+    if (!isBuyer && !isKurir) throw new ForbiddenError("You are not a participant in this order");
+    return "CANCELLED";
+  }
+
+  if (status === "PRICED" && action === "pay") {
+    if (!isBuyer) throw new ForbiddenError("Only the buyer can perform this action");
+    return "PAID";
+  }
+
+  if (status === "PRICED" && action === "cancel") {
+    if (!isBuyer && !isKurir) throw new ForbiddenError("You are not a participant in this order");
+    return "CANCELLED";
+  }
+
+  if (status === "PAID" && action === "complete") {
+    if (!isKurir) throw new ForbiddenError("Only the assigned kurir can perform this action");
+    return "COMPLETED";
+  }
+
+  if (["PENDING", "ACCEPTED", "PRICED", "PAID"].includes(status)) {
+    throw new BadRequestError(`Action '${action}' is not allowed when order is '${status}'`);
+  }
+
+  throw new BadRequestError(`No actions available for status '${status}'`);
+}
+
+export async function createOrder(buyerId: string, fromLocation: string, toLocation: string, itemDesc: string) {
   const [newOrder] = await db
     .insert(ordersTable)
     .values({
       buyerId,
+      fromLocation,
       toLocation,
       itemDesc,
     })
@@ -162,7 +215,7 @@ export async function acceptOrder(orderId: string, kurirId: string) {
     .limit(1);
 
   const order = getOrderOrThrow(row);
-  validateTransition(order.status, "accept", kurirId, order.buyerId, order.kurirId);
+  validateOrderAction(order.status, "accept", kurirId, order.buyerId, order.kurirId);
 
   const [updated] = await db
     .update(ordersTable)
@@ -197,7 +250,7 @@ export async function uploadPrice(
     .limit(1);
 
   const order = getOrderOrThrow(row);
-  validateTransition(order.status, "price", userId, order.buyerId, order.kurirId);
+  validateOrderAction(order.status, "price", userId, order.buyerId, order.kurirId);
 
   const [updated] = await db
     .update(ordersTable)
@@ -224,7 +277,7 @@ export async function cancelOrder(orderId: string, userId: string) {
     .limit(1);
 
   const order = getOrderOrThrow(row);
-  validateTransition(order.status, "cancel", userId, order.buyerId, order.kurirId);
+  validateOrderAction(order.status, "cancel", userId, order.buyerId, order.kurirId);
   const isAssignedKurir = order.kurirId === userId;
 
   if ((order.status === "ACCEPTED" || order.status === "PRICED") && isAssignedKurir) {
@@ -263,8 +316,9 @@ export async function cancelOrder(orderId: string, userId: string) {
 }
 
 // Facade Design Pattern
-/* Orchestrates balance validation, balance deduction, transaction record,
-security code generation, and order status update behind a single function call. */
+/* Performs balance validation, balance deduction, transaction record, 
+security code generation, and order status update behind a single function call.
+doesn't expose implementation details. */
 export async function payOrder(orderId: string, buyerId: string) {
   return await db.transaction(async (tx) => {
     const [row] = await tx
@@ -275,12 +329,12 @@ export async function payOrder(orderId: string, buyerId: string) {
       .limit(1);
 
     const order = getOrderOrThrow(row);
-    validateTransition(order.status, "pay", buyerId, order.buyerId, order.kurirId);
+    validateOrderAction(order.status, "pay", buyerId, order.buyerId, order.kurirId);
     const emails = await getParticipantEmails(order.buyerId, order.kurirId);
 
     const totalAmount = Number(order.itemPrice!) + Number(order.deliveryFee);
 
-    await executeTransaction(tx, "PAYMENT", buyerId, totalAmount, orderId);
+    await processTransaction(tx, "PAYMENT", buyerId, totalAmount, orderId);
 
     const securityCode = generateSecurityCode();
 
@@ -312,7 +366,7 @@ export async function completeOrder(orderId: string, kurirId: string, securityCo
       .limit(1);
 
     const order = getOrderOrThrow(row);
-    validateTransition(order.status, "complete", kurirId, order.buyerId, order.kurirId);
+    validateOrderAction(order.status, "complete", kurirId, order.buyerId, order.kurirId);
     const emails = await getParticipantEmails(order.buyerId, order.kurirId);
 
     if (order.securityCode !== securityCode) {
@@ -321,7 +375,7 @@ export async function completeOrder(orderId: string, kurirId: string, securityCo
 
     const totalAmount = Number(order.itemPrice!) + Number(order.deliveryFee);
 
-    await executeTransaction(tx, "EARNING", kurirId, totalAmount, orderId);
+    await processTransaction(tx, "EARNING", kurirId, totalAmount, orderId);
 
     const [updated] = await tx
       .update(ordersTable)

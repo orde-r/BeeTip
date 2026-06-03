@@ -1,0 +1,59 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    'Segoe UI', sans-serif;
+  --font-heading: Montserrat, Inter, ui-sans-serif, system-ui, sans-serif;
+  --text-headline-mobile: 24px;
+  --text-headline-mobile--line-height: 36px;
+  --color-campus-surface: #f8f9fb;
+  --color-campus-background: #f3f4f6;
+  --color-campus-card: #ffffff;
+  --color-campus-field: #f9fafb;
+  --color-campus-text: #191c1e;
+  --color-campus-muted: #434655;
+  --color-campus-outline: #c3c6d7;
+  --color-campus-primary: #004ac6;
+  --color-campus-primary-container: #2563eb;
+  --color-campus-primary-fixed: #dbe1ff;
+  --color-campus-primary-fixed-text: #003ea8;
+  --color-campus-on-primary: #ffffff;
+  --color-campus-orange: #fea619;
+  --color-campus-orange-hover: #f59e0b;
+  --color-campus-orange-fixed: #ffddb8;
+  --color-campus-orange-fixed-text: #653e00;
+  --color-campus-success: #10b981;
+  --color-campus-success-dark: #007d55;
+  --color-campus-success-fixed: #6ffbbe;
+  --color-campus-success-fixed-text: #005236;
+  --color-campus-success-fixed-strong-text: #002113;
+  --color-campus-error: #ba1a1a;
+  --color-campus-error-container: #ffdad6;
+  --color-campus-error-container-text: #93000a;
+  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.02);
+  --shadow-floating: 0 8px 24px rgba(0, 0, 0, 0.06);
+  --container-mobile: 390px;
+}
+
+:root {
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    sans-serif;
+  color: var(--color-campus-text);
+  background: var(--color-campus-background);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
