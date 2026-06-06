@@ -3,11 +3,6 @@ import { getCookie } from "hono/cookie";
 import jwt from "jsonwebtoken";
 import { UnauthorizedError } from "../errors/unauthorized.error.js";
 
-// Chain of Responsibility Design Pattern
-/* Each incoming request passes through a chain of middleware handlers.
-This auth middleware either processes the request and passes it to the
-next handler via await next(), or short-circuits the chain by throwing
-an UnauthorizedError. Flow: Auth Middleware → Route Handler → app.onError(). */
 
 export interface UserPayload {
   id: string;
@@ -23,6 +18,18 @@ declare module "hono" {
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 
+// Chain of Responsibility Design Pattern
+/* Each incoming request passes through a chain of middleware handlers.
+This auth middleware either processes the request and passes it to the
+next handler via await next(), or terminates the chain by throwing
+an UnauthorizedError. Flow: Auth Middleware → Route Handler → app.onError(). */
+
+
+// Proxy Design Pattern (Protection Proxy)
+/* The middleware acts as a protection proxy that controls access to protected route handlers.
+It verifies the JWT token and attaches the authenticated user before forwarding
+the request to the real handler. Unauthorized requests are rejected before
+reaching the protected resource*/
 export const authMiddleware = createMiddleware(async (c, next) => {
   const authHeader = c.req.header("Authorization");
   let token: string | undefined;
