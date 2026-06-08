@@ -1,0 +1,1 @@
+ALTER TABLE "orders" ADD COLUMN "from_location" varchar(500) NOT NULL;
