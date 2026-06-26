@@ -1,7 +1,5 @@
-
-
 # BeeTip
-Are you a BINUSIAN looking for a delivery service around campus? Well, here is your solution
+Are you a BINUSIAN looking for a delivery service around campus? Well, here is your solution.
 
 Submission for Software Architecture Final Project:
 - Bryan Widjaja
@@ -52,7 +50,7 @@ export default db;
 Socket.io rooms work as an Observer/Pub-Sub implementation. When a participant sends a message or an order status changes, all connected clients subscribed to the order room receive the event without the service needing to know each socket directly.
 
 - **Subject:** The Socket.io room (`room_order_<id>`).
-- **Observers:** The Buyer's and Kurir's connected sockets.
+- **Observers:** The buyer's and kurir's connected sockets.
 - **Events:** `receive_message` and `order_status_changed`.
 
 ```typescript
@@ -68,7 +66,7 @@ chatNamespaceRef?.to(`room_order_${order.id}`).emit("order_status_changed", {
 ### 3. Chain of Responsibility Pattern
 **Reference:** https://refactoring.guru/design-patterns/chain-of-responsibility
 
-**Feature:** Middleware Pipeline(Auth > Error Handling > Validation)
+**Feature:** Middleware Pipeline (Auth -> Route Handler -> Error Handling)
 
 **Code:** [/beetip-api/src/middlewares/auth.middleware.ts](/beetip-api/src/middlewares/auth.middleware.ts), [/beetip-api/src/index.ts](/beetip-api/src/index.ts)
 
@@ -77,22 +75,29 @@ Each incoming HTTP request passes through middleware handlers. A handler can pro
 The request flow is: **Auth Middleware -> Route Handler -> `app.onError()` if an error is thrown**.
 
 ```typescript
-export const authMiddleware: MiddlewareHandler = async (c, next) => {
+export const authMiddleware = createMiddleware(async (c, next) => {
   const authHeader = c.req.header("Authorization");
   let token: string | undefined;
 
   if (authHeader && authHeader.startsWith("Bearer ")) {
     token = authHeader.slice(7);
+  } else {
+    token = getCookie(c, "accessToken");
   }
 
   if (!token) {
     throw new UnauthorizedError("Missing or invalid Authorization header");
   }
 
-  const payload = jwt.verify(token, JWT_SECRET) as UserPayload;
-  c.set("user", payload);
+  try {
+    const payload = jwt.verify(token, JWT_SECRET) as UserPayload;
+    c.set("user", payload);
+  } catch {
+    throw new UnauthorizedError("Invalid or expired token");
+  }
+
   await next();
-};
+});
 ```
 
 ---
@@ -137,7 +142,7 @@ export async function payOrder(orderId: string, buyerId: string) {
 
     return {
       message: "Payment successful",
-      security_code: securityCode,
+      securityCode,
       order: toOrderDTO(updated, emails.buyerEmail, emails.kurirEmail),
     };
   });
