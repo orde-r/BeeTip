@@ -1,9 +1,15 @@
+# Beetip API
+
+## Development Setup
+
 ```bash
-docker compose up -d
+docker compose up db -d # only starts postgres container
 pnpm install
 pnpm run db:migrate
 pnpm run dev
 ```
+
+## API Documentation (Swagger)
 
 ```bash
 open http://localhost:3000/doc

@@ -10,6 +10,9 @@ Submission for Software Architecture Final Project:
 - Jonathan Hanska Susanto
 - Kristopher Nathanael
 
+## Setup + Run
+
+[Setup Guide](docs/setup.md)
 
 ## Table of Contents
 - [Design Patterns](#design-patterns)

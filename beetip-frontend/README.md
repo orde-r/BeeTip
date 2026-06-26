@@ -1,8 +1,8 @@
 # BeeTip Frontend
 
 ```bash
-npm install
 cp .env.example .env
+npm install
 npm run dev
 ```
 
