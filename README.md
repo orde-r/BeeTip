@@ -8,9 +8,9 @@ Submission for Software Architecture Final Project:
 - Jonathan Hanska Susanto
 - Kristopher Nathanael
 
-![BeeTip Intro](docs/screenshots/beetip1.png)
-![BeeTip Secure Handoff](docs/screenshots/handoff.png)
-![BeeTip Completed Order](docs/screenshots/completed.png)
+| Intro | Secure Handoff | Completed Order |
+| :---: | :---: | :---: |
+| <img src="docs/screenshots/beetip1.png" alt="BeeTip Intro" width="260" /> | <img src="docs/screenshots/handoff.png" alt="BeeTip Secure Handoff" width="260" /> | <img src="docs/screenshots/completed.png" alt="BeeTip Completed Order" width="260" /> |
 
 ## Setup + Run
 
